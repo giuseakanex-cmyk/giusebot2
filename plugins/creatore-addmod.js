@@ -1,4 +1,4 @@
-mport fetch from 'node-fetch'
+import fetch from 'node-fetch'
 
 const handler = async (m, { conn }) => {
   if (!m.isGroup)
