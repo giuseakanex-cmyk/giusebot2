@@ -303,6 +303,11 @@ export async function handler(chatUpdate) {
     }
     this.pushMessage(chatUpdate.messages).catch(console.error)
     m = smsg(this, m)
+    
+    // FIX BOTTONI: Estrazione testo interattivo
+    const id = m.message?.buttonsResponseMessage?.selectedButtonId || m.message?.templateButtonReplyMessage?.selectedId || m.message?.listResponseMessage?.singleSelectReply?.selectedRowId
+    if (id) m.text = id
+
     if (!m || !m.key || !m.chat || !m.sender) return
     if (m.isBaileys) return
     if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return
