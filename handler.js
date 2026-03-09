@@ -304,9 +304,16 @@ export async function handler(chatUpdate) {
     this.pushMessage(chatUpdate.messages).catch(console.error)
     m = smsg(this, m)
     
-    // FIX BOTTONI: Estrazione testo interattivo
-    const id = m.message?.buttonsResponseMessage?.selectedButtonId || m.message?.templateButtonReplyMessage?.selectedId || m.message?.listResponseMessage?.singleSelectReply?.selectedRowId
-    if (id) m.text = id
+    // FIX BOTTONI UNIVERSALE
+    let _text = (m.mtype === 'conversation' ? m.message.conversation : 
+                m.mtype === 'extendedTextMessage' ? m.message.extendedTextMessage.text : 
+                m.mtype === 'buttonsResponseMessage' ? m.message.buttonsResponseMessage.selectedButtonId : 
+                m.mtype === 'listResponseMessage' ? m.message.listResponseMessage.singleSelectReply.selectedRowId : 
+                m.mtype === 'templateButtonReplyMessage' ? m.message.templateButtonReplyMessage.selectedId : 
+                m.message?.interactiveResponseMessage ? JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id : '')
+    
+    if (_text) m.text = _text
+
 
     if (!m || !m.key || !m.chat || !m.sender) return
     if (m.isBaileys) return
