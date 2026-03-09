@@ -17,8 +17,8 @@ async function handler(m, { groupMetadata, command, conn, text, usedPrefix }) {
   m.reply(title, null, { mentions: top10 })
 }
 
-handler.help = ['top <testo>']
-handler.command = ['top']
+handler.help = ['topgioco <testo>']
+handler.command = ['topgioco']
 handler.tags = ['giochi']
 handler.group = true
 handler.admin = true
