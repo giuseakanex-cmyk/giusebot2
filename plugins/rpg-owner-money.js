@@ -1,4 +1,4 @@
-et handler = async (m, { text }) => {
+let handler = async (m, { text }) => {
 
   let user = global.db.data.users[m.sender]
 
