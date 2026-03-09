@@ -35,7 +35,7 @@ const handler = async (m, { conn }) => {
 
 👤 Utente: ${name}
 ⚡ Attivo solo qui
-♾️ Fino al tradimento.
+♾️ Fino al tradimento..
 `.trim();
 
   await conn.sendMessage(
