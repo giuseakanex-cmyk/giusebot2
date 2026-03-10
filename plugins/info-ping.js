@@ -30,7 +30,6 @@ let handler = async (m, { conn, usedPrefix }) => {
     });
 
     const textMsg =`
-
 ╔══════════════════════╗
         ⚡ 𝐏𝐈𝐍𝐆 ⚡
    𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹 𝚩𝚯𝐓
@@ -57,7 +56,17 @@ let handler = async (m, { conn, usedPrefix }) => {
         { buttonId: usedPrefix + "menu", buttonText: { displayText: "✧ 𝐌𝐞𝐧𝐮 ✧" }, type: 1 },
         { buttonId: usedPrefix + "ds", buttonText: { displayText: "🗑️ 𝐒𝐯𝐮𝐨𝐭𝐚 𝐬𝐞𝐬𝐬𝐢𝐨𝐧𝐢" }, type: 1 }
       ],
-      headerType: 1
+      headerType: 1,
+      // AGGIUNTO QUI IL CANALE FAKE
+      contextInfo: {
+        mentionedJid: [m.sender],
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+          newsletterJid: '120363233544482011@newsletter',
+          newsletterName: "✨.✦★彡 Ping by Giuse Ξ★✦.•",
+          serverMessageId: 100
+        }
+      }
     }, { quoted: m });
 
   } catch (err) {
@@ -76,8 +85,6 @@ function clockString(ms) {
 handler.help = ['ping'];
 handler.tags = ['info'];
 handler.command = /^(ping)$/i;
-
-// ✅ deve funzionare ovunque: niente requisito admin
 handler.admin = false;
 
 export default handler;
