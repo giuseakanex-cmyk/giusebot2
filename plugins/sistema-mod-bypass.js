@@ -1,28 +1,31 @@
 let handler = m => m
 
-handler.before = async function (m, { chat, isOwner, isAdmin, isMods }) {
-    // 1. Identifichiamo se l'utente è un moderatore locale (del gruppo)
-    // Proviamo i due nomi più comuni: 'moderatori' o 'moderators'
-    let isModLocale = (chat.moderatori && chat.moderatori.includes(m.sender)) || 
-                      (chat.moderators && chat.moderators.includes(m.sender))
+// Impostiamo una priorità altissima per farlo eseguire PRIMA dei controlli dell'handler
+handler.priority = -1000 
 
-    // Se l'utente non è un mod locale, non facciamo nulla e usciamo
-    if (!isModLocale) return false
-
-    // 2. Se è un mod locale, gli diamo i "superpoteri" per questo messaggio:
+handler.before = async function (m, { chat, conn }) {
+    if (!m.isGroup) return false
     
-    // Bypassiamo il "Modo Admin" del gruppo
-    if (chat.modoadmin) {
-        // Ingannevolmente diciamo al bot che per questo messaggio l'utente è un admin
-        // così il controllo 'if (chat.modoadmin && !isAdmin) return' fallisce e lo fa passare
-        m.isAdmin = true 
+    // Controlliamo come il tuo bot chiama i moderatori nel database
+    // Prova tutte le varianti comuni
+    let listaMod = chat.moderatori || chat.moderators || chat.mods || []
+    
+    // Verifichiamo se chi scrive è nella lista
+    let isModLocale = listaMod.includes(m.sender)
+
+    if (isModLocale) {
+        // TRUCCO: Se è un mod, diciamo all'handler che è un Admin e un Owner
+        // Questo sblocca sia il "Modo Admin" che i comandi riservati
+        m.isAdmin = true
+        m.isOwner = true // Lo aggiungiamo per sicurezza temporanea
+        
+        // Se il modo admin è attivo, forziamo il bot a non ignorare il messaggio
+        if (chat.modoadmin) {
+            m.isCommand = true 
+        }
     }
 
-    // Bypassiamo i comandi che richiedono 'handler.admin = true'
-    // Forziamo isAdmin a true solo se il plugin lo richiede
-    m.isModLocale = true // Creiamo questa etichetta per sicurezza
-
-    return false // Importante: deve restituire false per far continuare l'esecuzione agli altri plugin
+    return false
 }
 
 export default handler
