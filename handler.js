@@ -547,8 +547,8 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                              // 1. Sblocca il Modo Admin per i Moderatori
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return 
+                               // 1. Permette ai MOD LOCALI di parlare anche se il modo admin è attivo nel gruppo
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods && !isModLocale) return 
 
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
@@ -575,8 +575,8 @@ export async function handler(chatUpdate) {
                     continue
                 }
 
-                // 2. MODIFICA FONDAMENTALE: permette ai mod di usare i comandi 'admin'
-                if (plugin.admin && !isAdmin && !isMods) {
+                // 2. Permette ai MOD LOCALI di usare i comandi con 'handler.admin = true'
+                if (plugin.admin && !isAdmin && !isMods && !isModLocale) {
                     fail('admin', m, this)
                     continue
                 }
@@ -591,6 +591,7 @@ export async function handler(chatUpdate) {
                 }
 
                 m.isCommand = true
+
 
 
                 const COMMAND_SPAM_WINDOW_MS = 60000
