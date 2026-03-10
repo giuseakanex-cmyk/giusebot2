@@ -38,7 +38,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 🏟️ *${sq1}* vs *${sq2}*
 
 ⏳ *BOTTEGHINO APERTO!*
-Avete *15 secondi* per piazzare 
+Avete *25 secondi* per piazzare 
 le scommesse prima del match.
 Fate in fretta!
 
@@ -49,10 +49,10 @@ _Es: ${usedPrefix}punta 1 500_
 
         m.reply(msg)
 
-        // Timer impostato a 15 secondi (15000 millisecondi)
+        // Timer impostato a 25 secondi (25000 millisecondi)
         global.virtualMatches[chatId].timer = setTimeout(async () => {
             await avviaPartita(conn, chatId)
-        }, 15000)
+        }, 25000)
         
         return
     }
@@ -99,7 +99,16 @@ async function avviaPartita(conn, chatId) {
 
     await conn.sendMessage(chatId, { text: `⛔ *SCOMMESSE CHIUSE!*\n\n⚽ L'arbitro fischia l'inizio del match tra *${match.sq1}* e *${match.sq2}*!\n_Collegamento con il campo per gli highlights..._` })
 
-    let eventsCount = Math.floor(Math.random() * 3) + 4 
+    let eventsCount = Math.floor(Math.random() * 3) + 4 // Da 4 a 6 eventi salienti
+    
+    // Genera i minuti casuali per le azioni
+    let minutiAzione = []
+    for (let i = 0; i < eventsCount; i++) {
+        minutiAzione.push(Math.floor(Math.random() * 89) + 1) // Genera minuti da 1 a 89
+    }
+    
+    // ORDINA i minuti dal più piccolo al più grande per creare senso logico temporale
+    minutiAzione.sort((a, b) => a - b)
     
     for (let i = 0; i < eventsCount; i++) {
         await new Promise(resolve => setTimeout(resolve, 6000)) 
@@ -122,7 +131,7 @@ async function avviaPartita(conn, chatId) {
             msg = `💥 *PALO PIENO!*\nChe sfortuna per il ${team}, legno pieno a portiere battuto!`
         }
 
-        let minuto = Math.floor(Math.random() * 90 + 1)
+        let minuto = minutiAzione[i] // Prende il minuto già ordinato
         await conn.sendMessage(chatId, { text: `⏱️ *Minuto ${minuto}'*\n${msg}` })
     }
 
