@@ -547,8 +547,9 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                // MODIFICA SOLO QUESTA RIGA:
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return // isSam è il vecchio isRowner
+                              // 1. Sblocca il Modo Admin per i Moderatori
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return 
+
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
                     continue
@@ -573,10 +574,13 @@ export async function handler(chatUpdate) {
                     fail('botAdmin', m, this)
                     continue
                 }
-                if (plugin.admin && !isAdmin) {
+
+                // 2. MODIFICA FONDAMENTALE: permette ai mod di usare i comandi 'admin'
+                if (plugin.admin && !isAdmin && !isMods) {
                     fail('admin', m, this)
                     continue
                 }
+
                 if (plugin.private && m.isGroup) {
                     fail('private', m, this)
                     continue
@@ -587,6 +591,7 @@ export async function handler(chatUpdate) {
                 }
 
                 m.isCommand = true
+
 
                 const COMMAND_SPAM_WINDOW_MS = 60000
                 const COMMAND_SPAM_MAX = 8
