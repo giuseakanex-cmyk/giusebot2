@@ -303,18 +303,6 @@ export async function handler(chatUpdate) {
     }
     this.pushMessage(chatUpdate.messages).catch(console.error)
     m = smsg(this, m)
-    
-    // FIX BOTTONI UNIVERSALE
-    let _text = (m.mtype === 'conversation' ? m.message.conversation : 
-                m.mtype === 'extendedTextMessage' ? m.message.extendedTextMessage.text : 
-                m.mtype === 'buttonsResponseMessage' ? m.message.buttonsResponseMessage.selectedButtonId : 
-                m.mtype === 'listResponseMessage' ? m.message.listResponseMessage.singleSelectReply.selectedRowId : 
-                m.mtype === 'templateButtonReplyMessage' ? m.message.templateButtonReplyMessage.selectedId : 
-                m.message?.interactiveResponseMessage ? JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id : '')
-    
-    if (_text) m.text = _text
-
-
     if (!m || !m.key || !m.chat || !m.sender) return
     if (m.isBaileys) return
     if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return
@@ -547,9 +535,8 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                               // 1. Permette ai MOD LOCALI di parlare anche se il modo admin è attivo nel gruppo
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods && !isModLocale) return 
-
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin) return
+                if (settings.soloCreatore && !isSam) return // isSam è il vecchio isRowner
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
                     continue
@@ -574,13 +561,10 @@ export async function handler(chatUpdate) {
                     fail('botAdmin', m, this)
                     continue
                 }
-
-                // 2. Permette ai MOD LOCALI di usare i comandi con 'handler.admin = true'
-                if (plugin.admin && !isAdmin && !isMods && !isModLocale) {
+                if (plugin.admin && !isAdmin) {
                     fail('admin', m, this)
                     continue
                 }
-
                 if (plugin.private && m.isGroup) {
                     fail('private', m, this)
                     continue
@@ -591,8 +575,6 @@ export async function handler(chatUpdate) {
                 }
 
                 m.isCommand = true
-
-
 
                 const COMMAND_SPAM_WINDOW_MS = 60000
                 const COMMAND_SPAM_MAX = 8
