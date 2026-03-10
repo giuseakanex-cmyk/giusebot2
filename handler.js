@@ -547,8 +547,8 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin) return
-                if (settings.soloCreatore && !isSam) return // isSam è il vecchio isRowner
+                // MODIFICA SOLO QUESTA RIGA:
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return // isSam è il vecchio isRowner
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
                     continue
