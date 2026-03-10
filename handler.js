@@ -303,6 +303,24 @@ export async function handler(chatUpdate) {
     }
     this.pushMessage(chatUpdate.messages).catch(console.error)
     m = smsg(this, m)
+    
+    // FIX BOTTONI UNIVERSALE (Versione sicura)
+    let _text = ''
+    try {
+        _text = (m.mtype === 'conversation' ? m.message.conversation : 
+                m.mtype === 'extendedTextMessage' ? m.message.extendedTextMessage.text : 
+                m.mtype === 'buttonsResponseMessage' ? m.message.buttonsResponseMessage.selectedButtonId : 
+                m.mtype === 'listResponseMessage' ? m.message.listResponseMessage.singleSelectReply.selectedRowId : 
+                m.mtype === 'templateButtonReplyMessage' ? m.message.templateButtonReplyMessage.selectedId : 
+                m.message?.interactiveResponseMessage ? JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id : '')
+    } catch (e) {
+        // Se il JSON fallisce, proviamo a vedere se l'ID è altrove
+        _text = m.message?.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson || ''
+    }
+    
+    if (_text) m.text = _text
+
+
     if (!m || !m.key || !m.chat || !m.sender) return
     if (m.isBaileys) return
     if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return
@@ -535,8 +553,8 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin) return
-                if (settings.soloCreatore && !isSam) return // isSam è il vecchio isRowner
+                // MODIFICA SOLO QUESTA RIGA:
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return // isSam è il vecchio isRowner
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
                     continue
