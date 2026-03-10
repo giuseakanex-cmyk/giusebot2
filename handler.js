@@ -553,8 +553,10 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                // MODIFICA SOLO QUESTA RIGA:
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return // isSam è il vecchio isRowner
+                                // MODIFICA SOLO QUESTA RIGA:
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods && !isPrems) return // isSam è il vecchio isRowner
+                if (settings.soloCreatore && !isSam) return
+                
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
                     continue
@@ -593,6 +595,7 @@ export async function handler(chatUpdate) {
                 }
 
                 m.isCommand = true
+
 
                 const COMMAND_SPAM_WINDOW_MS = 60000
                 const COMMAND_SPAM_MAX = 8
