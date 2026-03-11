@@ -6,82 +6,73 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
 
   try {
-    // 1. Ricerca del video
+    // 1. Messaggio di attesa
+    await m.reply('⏳ _Sto cercando e scaricando il video, attendi un momento..._');
+
+    // 2. Ricerca su YouTube
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
 
-    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
+    // Sicurezza: Evita di scaricare video di 3 ore che farebbero esplodere il bot
+    if (vid.seconds > 900) {
+        return m.reply('❌ *Il video dura più di 15 minuti, è troppo pesante da inviare su WhatsApp! Cerca un video più corto.*');
+    }
+
+    let videoUrl = null;
+
+    // --- SISTEMA A TRIPLO MOTORE PER IL VIDEO ---
+
+    // Motore 1: Dylux (Il più affidabile)
+    try {
+        let video = await fg.ytv(vid.url);
+        if (video && video.dl_url) videoUrl = video.dl_url;
+    } catch (e1) {
+        console.log("Motore 1 video fallito, provo il 2...");
+    }
+
+    // Motore 2: Vreden API
+    if (!videoUrl) {
+        try {
+            let res = await fetch(`https://api.vreden.my.id/api/ytmp4?url=${vid.url}`);
+            let json = await res.json();
+            if (json.result && json.result.download && json.result.download.url) {
+                videoUrl = json.result.download.url;
+            }
+        } catch (e2) {
+            console.log("Motore 2 video fallito, provo il 3...");
+        }
+    }
+
+    // Motore 3: Siputzx
+    if (!videoUrl) {
+        try {
+            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${vid.url}`);
+            let json = await res.json();
+            if (json.data && json.data.dl) {
+                videoUrl = json.data.dl;
+            }
+        } catch (e3) {
+            console.log("Motore 3 video fallito.");
+        }
+    }
+
+    // Se tutti i server falliscono
+    if (!videoUrl) throw new Error("Tutti i server video sono irraggiungibili.");
+
+    // 3. Estetica del messaggio (Didascalia del video)
+    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎬 𝐏𝐋𝐀𝐘 𝐕𝐈𝐃𝐄𝐎 🎬\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
-    infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Scaricamento traccia audio..._`;
+    infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*`;
 
-    // 2. Invio immagine con bottone (SENZA CANALE FAKE)
+    // 4. Invia direttamente il VIDEO
     await conn.sendMessage(m.chat, {
-      image: { url: vid.thumbnail },
-      caption: infoMsg,
-      footer: "✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✨",
-      buttons: [
-        { buttonId: `${usedPrefix}ytv ${vid.url}`, buttonText: { displayText: "🎥 𝐒𝐜𝐚𝐫𝐢𝐜𝐚 𝐕𝐢𝐝𝐞𝐨" }, type: 1 }
-      ],
-      headerType: 4
+        video: { url: videoUrl },
+        caption: infoMsg,
+        mimetype: 'video/mp4'
     }, { quoted: m });
-
-    let audioUrl = null;
-
-    // --- SISTEMA A TRIPLO MOTORE ---
-
-    // Motore 1: Dylux (Il più stabile)
-    try {
-        let audio = await fg.yta(vid.url);
-        if (audio && audio.dl_url) audioUrl = audio.dl_url;
-    } catch (e1) {
-        console.log("Motore 1 fallito, provo il 2...");
-    }
-
-    // Motore 2: Vreden API (Se Dylux fallisce)
-    if (!audioUrl) {
-        try {
-            let res = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
-            let json = await res.json();
-            if (json.result && json.result.download && json.result.download.url) {
-                audioUrl = json.result.download.url;
-            }
-        } catch (e2) {
-            console.log("Motore 2 fallito, provo il 3...");
-        }
-    }
-
-    // Motore 3: Siputzx (L'ultima spiaggia)
-    if (!audioUrl) {
-        try {
-            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
-            let json = await res.json();
-            if (json.data && json.data.dl) {
-                audioUrl = json.data.dl;
-            }
-        } catch (e3) {
-            console.log("Motore 3 fallito.");
-        }
-    }
-
-    // Se nessuno dei 3 ha funzionato, blocca tutto.
-    if (!audioUrl) throw new Error("Tutti i server sono irraggiungibili.");
-
-    // 3. Scaricamento reale del file MP3
-    let resBuffer = await fetch(audioUrl);
-    if (!resBuffer.ok) throw new Error("File corrotto sul server.");
-    let audioBuffer = Buffer.from(await resBuffer.arrayBuffer());
-
-    // 4. Invio dell'audio pulito (Senza fake channel)
-    await conn.sendMessage(m.chat, {
-        audio: audioBuffer,
-        mimetype: 'audio/mpeg',
-        fileName: `${vid.title}.mp3`,
-        ptt: false
-    }, { quoted: m }); // Ora possiamo rimettere il quoted perché non c'è il canale fake a far crashare iOS
 
   } catch (e) {
     console.error(e);
@@ -91,6 +82,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
 handler.help = ['play'];
 handler.tags = ['downloader'];
-handler.command = /^(play|canzone)$/i;
+// Puoi usare sia .play che .video
+handler.command = /^(play|video)$/i;
 
 export default handler;
