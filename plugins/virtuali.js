@@ -1,4 +1,4 @@
-// Database temporaneo per le partite in corso
+// Database temporaneo per le partite in corso,By Giuse
 global.virtualMatches = global.virtualMatches || {}
 
 // Funzione presa dal tuo wallet per formattare i numeri
