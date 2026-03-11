@@ -1,22 +1,12 @@
 import yts from 'yt-search';
+import fg from 'api-dylux';
 import fetch from 'node-fetch';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
 
-  // Canale fake (SOLO PER L'IMMAGINE)
-  let contextFake = {
-    mentionedJid: [m.sender],
-    isForwarded: true,
-    forwardingScore: 999,
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: '120363233544482011@newsletter',
-      newsletterName: "✨.✦★彡 Music by Giuse Ξ★✦.•",
-      serverMessageId: 100
-    }
-  };
-
   try {
+    // 1. Ricerca del video
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
@@ -28,7 +18,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
     infoMsg += `🎧 _Scaricamento traccia audio..._`;
 
-    // 1. Manda l'immagine col bottone (QUI IL CANALE FAKE CI STA BENISSIMO)
+    // 2. Invio immagine con bottone (SENZA CANALE FAKE)
     await conn.sendMessage(m.chat, {
       image: { url: vid.thumbnail },
       caption: infoMsg,
@@ -36,36 +26,66 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       buttons: [
         { buttonId: `${usedPrefix}ytv ${vid.url}`, buttonText: { displayText: "🎥 𝐒𝐜𝐚𝐫𝐢𝐜𝐚 𝐕𝐢𝐝𝐞𝐨" }, type: 1 }
       ],
-      headerType: 4,
-      contextInfo: contextFake 
+      headerType: 4
     }, { quoted: m });
 
-    // 2. Download Audio
-    let apiAudio = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
-    let jsonAudio = await apiAudio.json();
-    let audioUrl = jsonAudio?.data?.dl;
+    let audioUrl = null;
 
-    if (!audioUrl) throw new Error("Link audio non trovato");
+    // --- SISTEMA A TRIPLO MOTORE ---
 
-    // Prepara il file
-    let res = await fetch(audioUrl);
-    if (!res.ok) throw new Error("Errore nel fetch del buffer");
-    let audioBuffer = Buffer.from(await res.arrayBuffer());
+    // Motore 1: Dylux (Il più stabile)
+    try {
+        let audio = await fg.yta(vid.url);
+        if (audio && audio.dl_url) audioUrl = audio.dl_url;
+    } catch (e1) {
+        console.log("Motore 1 fallito, provo il 2...");
+    }
 
-    // 🏆 3. INVIA AUDIO (FIX PER IPHONE) 🏆
+    // Motore 2: Vreden API (Se Dylux fallisce)
+    if (!audioUrl) {
+        try {
+            let res = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (json.result && json.result.download && json.result.download.url) {
+                audioUrl = json.result.download.url;
+            }
+        } catch (e2) {
+            console.log("Motore 2 fallito, provo il 3...");
+        }
+    }
+
+    // Motore 3: Siputzx (L'ultima spiaggia)
+    if (!audioUrl) {
+        try {
+            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (json.data && json.data.dl) {
+                audioUrl = json.data.dl;
+            }
+        } catch (e3) {
+            console.log("Motore 3 fallito.");
+        }
+    }
+
+    // Se nessuno dei 3 ha funzionato, blocca tutto.
+    if (!audioUrl) throw new Error("Tutti i server sono irraggiungibili.");
+
+    // 3. Scaricamento reale del file MP3
+    let resBuffer = await fetch(audioUrl);
+    if (!resBuffer.ok) throw new Error("File corrotto sul server.");
+    let audioBuffer = Buffer.from(await resBuffer.arrayBuffer());
+
+    // 4. Invio dell'audio pulito (Senza fake channel)
     await conn.sendMessage(m.chat, {
         audio: audioBuffer,
-        mimetype: 'audio/mpeg', // MP3 puro
+        mimetype: 'audio/mpeg',
         fileName: `${vid.title}.mp3`,
-        ptt: false,
-        // FORZIAMO LA RIMOZIONE DI QUALSIASI CANALE FAKE GLOBALE
-        contextInfo: {} 
-    }); 
-    // NOTA: Ho tolto anche { quoted: m }! Così arriva come messaggio pulito e non si bugga su iOS.
+        ptt: false
+    }, { quoted: m }); // Ora possiamo rimettere il quoted perché non c'è il canale fake a far crashare iOS
 
   } catch (e) {
     console.error(e);
-    m.reply('❌ _Impossibile scaricare questa canzone. Riprova tra poco!_');
+    m.reply('❌ _Scusa, i server di YouTube al momento bloccano i download. Riprova tra poco!_');
   }
 };
 
