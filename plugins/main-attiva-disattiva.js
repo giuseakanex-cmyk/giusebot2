@@ -80,20 +80,20 @@ const ownerz = featureRegistry.filter(f => ownerkeyz.has(f.key));
 
 function checkPermission(feat, { m, isAdmin, isOwner, isSam }) {
   if (feat.groupOnly && !m.isGroup && !isOwner) {
-    return '『 ❌ 』 Comando valido solo nei gruppi';
+    return '✦ 𝐆𝐑𝐔𝐏𝐏𝐎 ✦\n╰➤ Comando valido solo nei gruppi';
   }
   switch (feat.perm) {
     case PERM.sam:
-      if (!isSam) return '『 ❌ 』 Richiede privilegi di proprietario';
+      if (!isSam) return '✦ 𝐎𝐖𝐍𝐄𝐑 ✦\n╰➤ Richiede privilegi di proprietario';
       break;
     case PERM.OWNER:
-      if (feat.store === 'bot' && !isOwner && !isSam) return '『 ❌ 』 Richiede privilegi di proprietario';
+      if (feat.store === 'bot' && !isOwner && !isSam) return '✦ 𝐎𝐖𝐍𝐄𝐑 ✦\n╰➤ Richiede privilegi di proprietario';
       if (feat.store === 'chat' && m.isGroup && !(isAdmin || isOwner || isSam))
-        return '\n- 〘 🛠️ 〙 *`ꪶ͢Solo gli admin del gruppo possono usare questo comandoꫂ`*';
+        return '\n🛡️ 𝐒𝐎𝐋𝐎 𝐀𝐃𝐌𝐈𝐍 🛡️\n╰➤ ✦ Comando utilizzabile solo dagli Admin del gruppo';
       break;
     case PERM.ADMIN:
       if (m.isGroup && !(isAdmin || isOwner || isSam))
-        return '\n- 〘 🛠️ 〙 *`ꪶ͢Solo gli admin del gruppo possono usare questo comandoꫂ`*';
+        return '\n🛡️ 𝐒𝐎𝐋𝐎 𝐀𝐃𝐌𝐈𝐍 🛡️\n╰➤ ✦ Comando utilizzabile solo dagli Admin del gruppo';
       break;
   }
   return null;
@@ -136,8 +136,8 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
   } else {
     dynamicContextInfo = {
       externalAdReply: {
-        title: "varebot",
-        body: "Sistema di gestione funzioni",
+        title: "✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✨",
+        body: "Pannello di Controllo Moduli",
         mediaType: 1,
         jpegThumbnail: groupProfilePicBuffer
       }
@@ -170,8 +170,8 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
     const active = features.filter(f => getStatus(f.key));
     const inactive = features.filter(f => !getStatus(f.key));
     return [
-      { title: 'Disattivati 『 ❌ 』', rows: inactive.map(f => ({ title: f.name, description: f.desc, id: `${usedPrefix}attiva ${f.key}` })) },
-      { title: 'Attivati 『 ✅ 』', rows: active.map(f => ({ title: f.name, description: f.desc, id: `${usedPrefix}disattiva ${f.key}` })) }
+      { title: '🔴 𝐃𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐢', rows: inactive.map(f => ({ title: f.name, description: f.desc, id: `${usedPrefix}attiva ${f.key}` })) },
+      { title: '🟢 𝐀𝐭𝐭𝐢𝐯𝐚𝐭𝐢', rows: active.map(f => ({ title: f.name, description: f.desc, id: `${usedPrefix}disattiva ${f.key}` })) }
     ];
   };
 
@@ -180,24 +180,24 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
   if (!args.length) {
     const adminSections = createSections(adminz);
     const ownerSections = createSections(ownerz);
-    const varebot = 'media/menu/varebot.jpeg';
+    const giusebotImg = 'https://i.ibb.co/6N6sXXv/giusebot.jpg'; // Puoi sostituire con la tua immagine
 
     const adminCard = {
-      image: { url: varebot },
-      title: '『 👥 』 \`Opzioni Admin\`',
-      body: '- 〘 🛠️ 〙 *Gestisci le funzioni del gruppo selezionando attiva o disattiva.*',
-      footer: '˗ˏˋ ☾ 𝚟𝚊𝚛𝚎𝚋𝚘𝚝 ☽ ˎˊ˗',
-      buttons: [{ name: 'single_select', buttonParamsJson: JSON.stringify({ title: 'Impostazioni gruppo', sections: adminSections }) }]
+      image: { url: giusebotImg },
+      title: '『 👥 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 𝐀𝐃𝐌𝐈𝐍 👥 』',
+      body: '╰➤ ✦ *Imposta le funzioni del gruppo*',
+      footer: '✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 ✨',
+      buttons: [{ name: 'single_select', buttonParamsJson: JSON.stringify({ title: '⚙️ Apri Pannello', sections: adminSections }) }]
     };
 
     let cards = [adminCard];
     if (isOwner || isSam) {
       cards.push({
         image: { url: 'https://i.ibb.co/kVdFLyGL/sam.jpg' },
-        title: '『 👑 』 \`Opzioni Owner\`',
-        body: '- 〘 🛠️ 〙Gestisci le funzioni proprietario selezionando attiva o disattiva.',
-        footer: '˗ˏˋ ☾ 𝚟𝚊𝚛𝚎𝚋𝚘𝚝 ☽ ˎˊ˗',
-        buttons: [{ name: 'single_select', buttonParamsJson: JSON.stringify({ title: 'Seleziona azione', sections: ownerSections }) }]
+        title: '『 👑 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 𝐎𝐖𝐍𝐄𝐑 👑 』',
+        body: '╰➤ ✦ *Imposta le funzioni globali del bot*',
+        footer: '✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 ✨',
+        buttons: [{ name: 'single_select', buttonParamsJson: JSON.stringify({ title: '⚙️ Apri Pannello', sections: ownerSections }) }]
       });
     }
 
@@ -208,8 +208,8 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
     };
 
     return conn.sendMessage(m.chat, {
-      text: '*Sistema di gestione funzioni*',
-      footer: '*─ׄ✦☾⋆⁺₊✧ 𝓿𝓪𝓻𝓮𝓫𝓸𝓽 ✧₊⁺⋆☽✦─ׅ⭒*',
+      text: '*⚙️ 𝐏𝐀𝐍𝐍𝐄𝐋𝐋𝐎 𝐃𝐈 𝐂𝐎𝐍𝐓𝐑𝐎𝐋𝐋𝐎 ⚙️*',
+      footer: '✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✨',
       cards,
       contextInfo: dynamicContextInfo
     }, { quoted: fkontak_menu });
@@ -221,7 +221,7 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
 
     const feat = aliasMap.get(type);
     if (!feat) {
-      result.status = '『 ❌ 』 Comando non riconosciuto';
+      result.status = '❌ *Comando Sconosciuto*';
       results.push(result);
       continue;
     }
@@ -235,7 +235,7 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
 
     const target = feat.store === 'bot' ? bot : chat;
     if (target[feat.key] === isEnable) {
-      result.status = `『 ⚠️ 』 Già ${isEnable ? 'attivo' : 'disattivato'}`;
+      result.status = `⚠️ *Già ${isEnable ? 'Attivo' : 'Disattivato'}*`;
       results.push(result);
       continue;
     }
@@ -244,17 +244,18 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
 
     if (feat.onToggle === 'multiprefix') handleMultiprefixToggle(bot);
 
-    result.status = `『 ✅ 』 ${isEnable ? 'Attivato' : 'Disattivato'}`;
+    result.status = `✅ *${isEnable ? 'Attivato' : 'Disattivato'}*`;
     result.success = true;
     results.push(result);
   }
 
-  let summaryMessage = `『 🉐 』 \`Riepilogo modifiche:\`\n\n`;
+  let summaryMessage = `╭━━━〔 ⚙️ 𝐑𝐈𝐄𝐏𝐈𝐋𝐎𝐆𝐎 ⚙️ 〕━━━⬣\n`;
   for (const result of results) {
     const cleanType = String(result.type || '').trim();
     const cleanStatus = String(result.status || '').replace(/^\s*\n+/, ' ').replace(/^\s*-\s*/, ' ').trimEnd();
-    summaryMessage += `- \`${cleanType}\` ${cleanStatus ? ' ' + cleanStatus : ''}\n`;
+    summaryMessage += `┃ 🔹 \`${cleanType}\` ╰➤ ${cleanStatus ? ' ' + cleanStatus : ''}\n`;
   }
+  summaryMessage += `╰━━━━━━━━━━━━━━━━━━⬣`;
 
   const fkontak_confirm = {
     key: { participant: m.sender, remoteJid: '0@s.whatsapp.net', fromMe: false, id: 'BotFunction' },
