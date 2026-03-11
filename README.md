@@ -8,7 +8,7 @@
 <img src="https://i.ibb.co/sz1yhs9/IMG-1266.jpg" alt="VareBot Preview" width="600" style="border-radius: 15px; margin: 50px 0;"/>
 
 <p>
-  <a href="https://github.com/realvare/varebot">
+  <a href="https://github.com/giuseakanex-cmyk/charmanderbot">
     <img src="https://img.shields.io/badge/VERSIONE-2.0.0-7a7acd?style=for-the-badge&logo=semantic-release&logoColor=white&labelColor=6349d8">
   </a>
   <a href="https://nodejs.org/">
