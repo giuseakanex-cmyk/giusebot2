@@ -1,4 +1,4 @@
-//API Key by Giuse 
+//APY Key by Giuse
 import yts from 'yt-search';
 import fg from 'api-dylux';
 import fetch from 'node-fetch';
@@ -8,6 +8,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     return m.reply(`╭ ━━━ ❨ ⚠️ 𝐀𝐕𝐕𝐈𝐒𝐎 ❩ ━━━ ╮\n│ ✦ 𝐄𝐑𝐑𝐎𝐑𝐄\n│ ╰➤ Inserisci il titolo di una canzone!\n│ ✦ 𝐄𝐬𝐞𝐦𝐩𝐢𝐨: ${usedPrefix + command} Eminem Mockingbird\n╰ ━━━━━━━━━━━━━ ╯`);
   }
 
+  // Canale fake (Lo useremo solo per l'immagine)
   let contextFake = {
     mentionedJid: [m.sender],
     isForwarded: true,
@@ -25,7 +26,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
 
-    // 2. Info Immagine con BOTTONE per il video
+    // 2. Info Immagine con BOTTONE per il video (QUI IL CANALE FAKE RIMANE)
     let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
@@ -41,7 +42,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         { buttonId: `${usedPrefix}video ${vid.url}`, buttonText: { displayText: "🎥 𝐒𝐜𝐚𝐫𝐢𝐜𝐚 𝐕𝐢𝐝𝐞𝐨" }, type: 1 }
       ],
       headerType: 4,
-      contextInfo: contextFake
+      contextInfo: contextFake 
     }, { quoted: m });
 
     // 3. Download URL Audio
@@ -57,17 +58,17 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     if (!audioUrl) throw new Error("API Down");
 
-    // 🏆 LA MAGIA E' QUI: Scarichiamo il file in Buffer prima di mandarlo!
+    // Scarichiamo il file in Buffer
     let response = await fetch(audioUrl);
     let arrayBuffer = await response.arrayBuffer();
     let audioBuffer = Buffer.from(arrayBuffer);
 
-    // Invia il Buffer reale (niente più "file non disponibile")
+    // 🏆 INVIA AUDIO (Senza il canale fake, così WhatsApp non lo blocca!)
     await conn.sendMessage(m.chat, {
         audio: audioBuffer,
         mimetype: 'audio/mpeg',
         fileName: vid.title + '.mp3',
-        contextInfo: contextFake
+        ptt: false // Garantisce che sia visto come un MP3 e non come vocale
     }, { quoted: m });
 
   } catch (e) {
