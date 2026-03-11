@@ -14,8 +14,7 @@
   <a href="https://nodejs.org/">
     <img src="https://img.shields.io/badge/Node.js-20.2.0-7a7acd?style=for-the-badge&logo=node.js&logoColor=white&labelColor=6349d8">
   </a>
-  <a href="https://opensource.org/licenses/Apache-2.0">
-    <img src="https://img.shields.io/badge/LICENZA-Apache%202.0-7a7acd?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=6349d8">
+
   </a>
 </p>
 
