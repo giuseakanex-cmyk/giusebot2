@@ -5,11 +5,11 @@
 
 # ![Retro](https://readme-typing-svg.herokuapp.com?font=VT323&size=40&duration=2500&pause=1000&color=7a7acd&center=true&vCenter=true&width=700&height=70&lines=$+GIUSEBOT)
 
-<img src="https://i.ibb.co/hJW7WwxV/varebot.jpg" alt="VareBot Preview" width="600" style="border-radius: 15px; margin: 50px 0;"/>
+<img src="https://i.ibb.co/sz1yhs9/IMG-1266.jpg" alt="VareBot Preview" width="600" style="border-radius: 15px; margin: 50px 0;"/>
 
 <p>
   <a href="https://github.com/realvare/varebot">
-    <img src="https://img.shields.io/badge/VERSIONE-2.6.0-7a7acd?style=for-the-badge&logo=semantic-release&logoColor=white&labelColor=6349d8">
+    <img src="https://img.shields.io/badge/VERSIONE-2.0.0-7a7acd?style=for-the-badge&logo=semantic-release&logoColor=white&labelColor=6349d8">
   </a>
   <a href="https://nodejs.org/">
     <img src="https://img.shields.io/badge/Node.js-20.2.0-7a7acd?style=for-the-badge&logo=node.js&logoColor=white&labelColor=6349d8">
