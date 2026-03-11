@@ -1,6 +1,6 @@
-//APY KEY by Giuse
 import yts from 'yt-search';
 import fetch from 'node-fetch';
+import fg from 'api-dylux';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
@@ -28,7 +28,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
     infoMsg += `🎧 _Scaricamento traccia audio..._`;
 
-    // 1. Manda l'immagine col bottone (Nota: il bottone ora usa .ytv)
     await conn.sendMessage(m.chat, {
       image: { url: vid.thumbnail },
       caption: infoMsg,
@@ -40,28 +39,50 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       contextInfo: contextFake 
     }, { quoted: m });
 
-    // 2. Download Audio tramite API ultra-stabile (Siputzx)
-    let apiAudio = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
-    let jsonAudio = await apiAudio.json();
-    let audioUrl = jsonAudio.data.dl;
+    // --- SISTEMA ANTICRASH A DOPPIO MOTORE ---
+    let audioUrl = null;
 
-    if (!audioUrl) throw new Error("Link audio non trovato");
+    try {
+        // Tentativo 1: Il pacchetto locale (più forte contro i blocchi)
+        let audio = await fg.yta(vid.url);
+        audioUrl = audio.dl_url;
+    } catch (e1) {
+        console.log("Motore 1 fallito, provo l'API esterna...");
+        
+        // Tentativo 2: L'API esterna (con controllo di sicurezza)
+        let apiAudio = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
+        let jsonAudio = await apiAudio.json();
+        
+        // 💡 IL FIX È QUI: Controlliamo che esista "data" prima di cercare "dl"
+        if (jsonAudio && jsonAudio.data && jsonAudio.data.dl) {
+            audioUrl = jsonAudio.data.dl;
+        }
+    }
 
-    // Scarica il buffer reale e controlla che sia andato a buon fine
+    // Se entrambi falliscono, fermiamo tutto senza far crashare il terminale
+    if (!audioUrl) throw new Error("Tutti i server per il download sono down.");
+
+    // Scarica il file audio fisico
     let res = await fetch(audioUrl);
-    if (!res.ok) throw new Error("Errore nel fetch del buffer");
+    
+    // Altro controllo: se il server ci dà una pagina web di errore invece di un MP3, bloccalo!
+    if (res.headers.get('content-type')?.includes('text/html')) {
+        throw new Error("Il server ha restituito una pagina web bloccata.");
+    }
+
     let audioBuffer = Buffer.from(await res.arrayBuffer());
 
-    // 3. Invia l'audio in formato sicuro (audio/mp4)
+    // Manda l'audio
     await conn.sendMessage(m.chat, {
         audio: audioBuffer,
-        mimetype: 'audio/mp4', // WhatsApp preferisce questo formato per i player audio
+        mimetype: 'audio/mp4', // Meglio digerito da WhatsApp
         fileName: `${vid.title}.mp3`
     }, { quoted: m });
 
   } catch (e) {
     console.error(e);
-    m.reply('❌ _Impossibile scaricare questa canzone (forse protetta da copyright o server down)._');
+    // Ora, se qualcosa va storto, il bot non crasha ma ti avvisa in chat
+    m.reply('❌ _I server per il download al momento fanno i capricci. Riprova tra poco!_');
   }
 };
 
