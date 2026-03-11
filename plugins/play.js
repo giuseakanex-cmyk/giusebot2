@@ -1,4 +1,4 @@
-//Plugin by Giuse
+//API Key by Giuse 
 import yts from 'yt-search';
 import fg from 'api-dylux';
 import fetch from 'node-fetch';
@@ -31,13 +31,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Audio in arrivo..._`;
+    infoMsg += `🎧 _Elaborazione traccia audio..._`;
 
     await conn.sendMessage(m.chat, {
       image: { url: vid.thumbnail },
       caption: infoMsg,
       footer: "✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✨",
-      // ECCO IL BOTTONE CHE RICHIAMA IL COMANDO .video
       buttons: [
         { buttonId: `${usedPrefix}video ${vid.url}`, buttonText: { displayText: "🎥 𝐒𝐜𝐚𝐫𝐢𝐜𝐚 𝐕𝐢𝐝𝐞𝐨" }, type: 1 }
       ],
@@ -45,7 +44,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       contextInfo: contextFake
     }, { quoted: m });
 
-    // 3. Download Audio Immediato
+    // 3. Download URL Audio
     let audioUrl;
     try {
         let audio = await fg.yta(vid.url);
@@ -58,8 +57,14 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     if (!audioUrl) throw new Error("API Down");
 
+    // 🏆 LA MAGIA E' QUI: Scarichiamo il file in Buffer prima di mandarlo!
+    let response = await fetch(audioUrl);
+    let arrayBuffer = await response.arrayBuffer();
+    let audioBuffer = Buffer.from(arrayBuffer);
+
+    // Invia il Buffer reale (niente più "file non disponibile")
     await conn.sendMessage(m.chat, {
-        audio: { url: audioUrl },
+        audio: audioBuffer,
         mimetype: 'audio/mpeg',
         fileName: vid.title + '.mp3',
         contextInfo: contextFake
@@ -67,13 +72,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   } catch (e) {
     console.error(e);
-    m.reply('❌ _I server sono occupati. Riprova tra poco!_');
+    m.reply('❌ _Errore di conversione. Il brano potrebbe essere protetto da copyright, riprova con un\'altra canzone!_');
   }
 };
 
 handler.help = ['play'];
 handler.tags = ['downloader'];
-// Questo comando risponde a .play o .canzone
 handler.command = /^(play|canzone)$/i;
 
 export default handler;
