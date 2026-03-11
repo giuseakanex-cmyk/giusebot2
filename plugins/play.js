@@ -1,10 +1,10 @@
 import yts from 'yt-search';
 import fetch from 'node-fetch';
-import fg from 'api-dylux';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
 
+  // Canale fake (SOLO PER L'IMMAGINE)
   let contextFake = {
     mentionedJid: [m.sender],
     isForwarded: true,
@@ -28,6 +28,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
     infoMsg += `🎧 _Scaricamento traccia audio..._`;
 
+    // 1. Manda l'immagine col bottone (QUI IL CANALE FAKE CI STA BENISSIMO)
     await conn.sendMessage(m.chat, {
       image: { url: vid.thumbnail },
       caption: infoMsg,
@@ -39,50 +40,32 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       contextInfo: contextFake 
     }, { quoted: m });
 
-    // --- SISTEMA ANTICRASH A DOPPIO MOTORE ---
-    let audioUrl = null;
+    // 2. Download Audio
+    let apiAudio = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
+    let jsonAudio = await apiAudio.json();
+    let audioUrl = jsonAudio?.data?.dl;
 
-    try {
-        // Tentativo 1: Il pacchetto locale (più forte contro i blocchi)
-        let audio = await fg.yta(vid.url);
-        audioUrl = audio.dl_url;
-    } catch (e1) {
-        console.log("Motore 1 fallito, provo l'API esterna...");
-        
-        // Tentativo 2: L'API esterna (con controllo di sicurezza)
-        let apiAudio = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
-        let jsonAudio = await apiAudio.json();
-        
-        // 💡 IL FIX È QUI: Controlliamo che esista "data" prima di cercare "dl"
-        if (jsonAudio && jsonAudio.data && jsonAudio.data.dl) {
-            audioUrl = jsonAudio.data.dl;
-        }
-    }
+    if (!audioUrl) throw new Error("Link audio non trovato");
 
-    // Se entrambi falliscono, fermiamo tutto senza far crashare il terminale
-    if (!audioUrl) throw new Error("Tutti i server per il download sono down.");
-
-    // Scarica il file audio fisico
+    // Prepara il file
     let res = await fetch(audioUrl);
-    
-    // Altro controllo: se il server ci dà una pagina web di errore invece di un MP3, bloccalo!
-    if (res.headers.get('content-type')?.includes('text/html')) {
-        throw new Error("Il server ha restituito una pagina web bloccata.");
-    }
-
+    if (!res.ok) throw new Error("Errore nel fetch del buffer");
     let audioBuffer = Buffer.from(await res.arrayBuffer());
 
-    // Manda l'audio
+    // 🏆 3. INVIA AUDIO (FIX PER IPHONE) 🏆
     await conn.sendMessage(m.chat, {
         audio: audioBuffer,
-        mimetype: 'audio/mp4', // Meglio digerito da WhatsApp
-        fileName: `${vid.title}.mp3`
-    }, { quoted: m });
+        mimetype: 'audio/mpeg', // MP3 puro
+        fileName: `${vid.title}.mp3`,
+        ptt: false,
+        // FORZIAMO LA RIMOZIONE DI QUALSIASI CANALE FAKE GLOBALE
+        contextInfo: {} 
+    }); 
+    // NOTA: Ho tolto anche { quoted: m }! Così arriva come messaggio pulito e non si bugga su iOS.
 
   } catch (e) {
     console.error(e);
-    // Ora, se qualcosa va storto, il bot non crasha ma ti avvisa in chat
-    m.reply('❌ _I server per il download al momento fanno i capricci. Riprova tra poco!_');
+    m.reply('❌ _Impossibile scaricare questa canzone. Riprova tra poco!_');
   }
 };
 
