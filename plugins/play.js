@@ -6,24 +6,36 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
 
   try {
-    // 1. Messaggio di attesa
-    await m.reply('⏳ _Sto cercando e scaricando il video, attendi un momento..._');
+    await m.reply('⏳ _Sto cercando la canzone, attendi un momento..._');
 
-    // 2. Ricerca su YouTube
+    // 1. Ricerca su YouTube
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
 
-    // Sicurezza: Evita di scaricare video di 3 ore che farebbero esplodere il bot
     if (vid.seconds > 900) {
-        return m.reply('❌ *Il video dura più di 15 minuti, è troppo pesante da inviare su WhatsApp! Cerca un video più corto.*');
+        return m.reply('❌ *Il video dura più di 15 minuti, è troppo pesante da inviare su WhatsApp!*');
     }
+
+    // 2. Estetica del messaggio con l'IMMAGINE
+    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎬 𝐏𝐋𝐀𝐘 𝐕𝐈𝐃𝐄𝐎 🎬\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
+    infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
+    infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
+    infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
+    infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
+    infoMsg += `⏳ _Scaricamento del video in corso..._`;
+
+    // 3. INVIA LA COPERTINA (Immagine pulita, senza bug)
+    await conn.sendMessage(m.chat, {
+        image: { url: vid.thumbnail },
+        caption: infoMsg
+    }, { quoted: m });
 
     let videoUrl = null;
 
     // --- SISTEMA A TRIPLO MOTORE PER IL VIDEO ---
-
-    // Motore 1: Dylux (Il più affidabile)
+    
+    // Motore 1: Dylux
     try {
         let video = await fg.ytv(vid.url);
         if (video && video.dl_url) videoUrl = video.dl_url;
@@ -57,20 +69,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }
     }
 
-    // Se tutti i server falliscono
     if (!videoUrl) throw new Error("Tutti i server video sono irraggiungibili.");
 
-    // 3. Estetica del messaggio (Didascalia del video)
-    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎬 𝐏𝐋𝐀𝐘 𝐕𝐈𝐃𝐄𝐎 🎬\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
-    infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
-    infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
-    infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
-    infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*`;
-
-    // 4. Invia direttamente il VIDEO
+    // 4. INVIA IL VIDEO
     await conn.sendMessage(m.chat, {
         video: { url: videoUrl },
-        caption: infoMsg,
+        caption: `🎬 *${vid.title}*\n✨ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✨`,
         mimetype: 'video/mp4'
     }, { quoted: m });
 
