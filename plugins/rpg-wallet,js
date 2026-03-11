@@ -14,7 +14,7 @@ let handler = async (m, { conn }) => {
     let total = user.euro + user.bank
 
     let message = `
-╭━━✧💼WALLET💼✦━━╮
+╔═ 💼 WALLET 💼 ═╗
 
 👤 Utente: @${who.split('@')[0]}
 
@@ -23,7 +23,7 @@ let handler = async (m, { conn }) => {
 ─────────────────
 🧾 Totale: ${formatNumber(total)} €
 
-╰━━━━━━✧✦━━━━━━━━╯
+╚═══════════════╝
 `.trim()
 
     await m.reply(message, null, { mentions: [who] })
