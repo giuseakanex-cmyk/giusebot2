@@ -205,9 +205,7 @@ Per sbloccare il 100% del potenziale di **VareBot**, modifica il file `config.js
 
 <div align="center">
 
-<img src="https://github.com/realvare.png?size=200" alt="Sam Profile" style="width: 150px; height: 150px; border-radius: 50% margin-bottom: 15px;"/>
-
-**SAM AKA VARE**
+**GIUSE**
 
 </div>
 
