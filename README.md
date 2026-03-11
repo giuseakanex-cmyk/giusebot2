@@ -77,20 +77,6 @@
 
 ---
 
-## <div align="center">🌐 COMMUNITY & SUPPORTO</div>
-
-<div align="center">
-Entra nella community per aggiornamenti, supporto e novità esclusive.
-
-| **YouTube Channel** 🎬 | **Canale WhatsApp** 🟢 | **Supporta il Dev** 💖 |
-|:---:|:---:|:---:|
-| <a href="https://youtube.com/channel/UCEkY3BqEROZ-7BwVP6IuEmQ" target="_blank"><img src="https://img.shields.io/badge/ISCRIVITI-FF0000?style=for-the-badge&logo=youtube&logoColor=white" height="35"/></a> | <a href="https://whatsapp.com/channel/0029VbB41Sa1Hsq1JhsC1Z1z" target="_blank"><img src="https://img.shields.io/badge/ENTRA_ORA-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" height="35"/></a> | <a href="https://paypal.me/samakavare" target="_blank"><img src="https://img.shields.io/badge/DONA_ORA-0070BA?style=for-the-badge&logo=paypal&logoColor=white" height="35"/></a> |
-| *Tutorial & Guide (soon)* | *News & Changelog* | *Finanzia il progetto* |
-
-</div>
-
----
-
 ## <div align="center">📥 INSTALLAZIONE</div>
 
 ### 📱 *ANDROID (TERMUX)*
