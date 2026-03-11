@@ -1,4 +1,4 @@
-// Database temporaneo per le partite in corso,By Giuse
+// Database temporaneo per le partite in corso, By Giuse
 global.virtualMatches = global.virtualMatches || {}
 
 // Funzione presa dal tuo wallet per formattare i numeri
@@ -32,19 +32,28 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             timer: null
         }
 
+        // Il nuovo tabellone con quote e nuove scommesse!
         let msg = `
 ╭━━✧⚽SERIE A VIRTUALE⚽✦━━╮
 
 🏟️ *${sq1}* vs *${sq2}*
 
+📊 *QUOTE DISPONIBILI:*
+🔹 *1* (Vince ${sq1}) ➔ *2.0x*
+🔹 *X* (Pareggio) ➔ *3.0x*
+🔹 *2* (Vince ${sq2}) ➔ *2.0x*
+🔹 *GG* (Entrambe segnano) ➔ *1.8x*
+🔹 *NG* (Almeno una a secco) ➔ *1.8x*
+🔹 *OVER* (Più di 2 gol totali) ➔ *2.0x*
+🔹 *UNDER* (Max 2 gol totali) ➔ *1.8x*
+🔹 *1X* / *X2* (Doppia Chance) ➔ *1.3x*
+🔹 *12* (Nessun Pareggio) ➔ *1.2x*
+
 ⏳ *BOTTEGHINO APERTO!*
-Avete *25 secondi* per piazzare 
-le scommesse prima del match.
-Fate in fretta!
+Avete *25 secondi* per puntare!
 
-👉 Usa: *${usedPrefix}punta [1/X/2/GG/NG] [euro]*
-_Es: ${usedPrefix}punta 1 500_
-
+👉 Usa: *${usedPrefix}punta [ESITO] [EURO]*
+_Es: ${usedPrefix}punta OVER 500_
 ╰━━━━━━✧✦━━━━━━━━━━━━╯`.trim()
 
         m.reply(msg)
@@ -67,13 +76,15 @@ _Es: ${usedPrefix}punta 1 500_
         if (match.state !== 'betting') return m.reply(`⛔ Troppo tardi! L'arbitro ha già fischiato l'inizio.`)
 
         let user = global.db.data.users[m.sender]
-        if (!args[0] || !args[1]) return m.reply(`👉 Usa: *${usedPrefix}punta [1/X/2/GG/NG] [euro]*`)
+        if (!args[0] || !args[1]) return m.reply(`👉 Usa: *${usedPrefix}punta [ESITO] [EURO]*\nGuarda il tabellone per gli esiti!`)
         
         let scommessa = args[0].toUpperCase()
         let puntata = parseInt(args[1])
-        let valide = ['1', 'X', '2', 'GG', 'NG']
+        
+        // Nuova lista di giocate valide
+        let valide = ['1', 'X', '2', 'GG', 'NG', 'OVER', 'UNDER', '1X', 'X2', '12']
 
-        if (!valide.includes(scommessa)) return m.reply(`⚠️ Esito non valido! Scegli tra: *1, X, 2, GG, NG*.`)
+        if (!valide.includes(scommessa)) return m.reply(`⚠️ Esito non valido!\nScegli tra: *1, X, 2, GG, NG, OVER, UNDER, 1X, X2, 12*.`)
         if (isNaN(puntata) || puntata <= 0) return m.reply(`⚠️ Inserisci una puntata valida!`)
         if (user.euro < puntata) return m.reply(`💸 Fondi insufficienti! Hai solo *${formatNumber(user.euro)} €*.`)
         
@@ -131,30 +142,46 @@ async function avviaPartita(conn, chatId) {
             msg = `💥 *PALO PIENO!*\nChe sfortuna per il ${team}, legno pieno a portiere battuto!`
         }
 
-        let minuto = minutiAzione[i] // Prende il minuto già ordinato
+        let minuto = minutiAzione[i]
         await conn.sendMessage(chatId, { text: `⏱️ *Minuto ${minuto}'*\n${msg}` })
     }
 
     await new Promise(resolve => setTimeout(resolve, 5000))
 
+    // ==========================================
+    // CALCOLO DEI NUOVI ESITI
+    // ==========================================
     let is1 = match.score1 > match.score2
     let isX = match.score1 === match.score2
     let is2 = match.score1 < match.score2
     let isGG = match.score1 > 0 && match.score2 > 0
     let isNG = match.score1 === 0 || match.score2 === 0
+    let isOver = (match.score1 + match.score2) > 2
+    let isUnder = (match.score1 + match.score2) <= 2
+    let is1X = is1 || isX
+    let isX2 = is2 || isX
+    let is12 = is1 || is2
 
     let winnersTxt = ''
     let scommettitori = match.bets.map(b => b.sender)
     
     for (let b of match.bets) {
         let won = false
-        let multiplier = 2.0
+        let multiplier = 0.0
         
-        if (b.scommessa === '1' && is1) won = true
-        if (b.scommessa === 'X' && isX) { won = true; multiplier = 3.0 }
-        if (b.scommessa === '2' && is2) won = true
-        if (b.scommessa === 'GG' && isGG) { won = true; multiplier = 1.8 }
-        if (b.scommessa === 'NG' && isNG) { won = true; multiplier = 1.8 }
+        // Verifica vincite con le nuove quote
+        switch(b.scommessa) {
+            case '1': if (is1) { won = true; multiplier = 2.0; } break;
+            case 'X': if (isX) { won = true; multiplier = 3.0; } break;
+            case '2': if (is2) { won = true; multiplier = 2.0; } break;
+            case 'GG': if (isGG) { won = true; multiplier = 1.8; } break;
+            case 'NG': if (isNG) { won = true; multiplier = 1.8; } break;
+            case 'OVER': if (isOver) { won = true; multiplier = 2.0; } break;
+            case 'UNDER': if (isUnder) { won = true; multiplier = 1.8; } break;
+            case '1X': if (is1X) { won = true; multiplier = 1.3; } break;
+            case 'X2': if (isX2) { won = true; multiplier = 1.3; } break;
+            case '12': if (is12) { won = true; multiplier = 1.2; } break;
+        }
 
         if (won) {
             let winAmount = Math.floor(b.puntata * multiplier)
