@@ -11,11 +11,13 @@ let handler = async (m, { conn, usedPrefix }) => {
     // Calcolo ping
     const startTime = performance.now();
     const endTime = performance.now();
-    const speed = (endTime - startTime).toFixed(4);
+    const latenza = (endTime - startTime).toFixed(4); // CORRETTO: rinominato da speed a latenza
 
+    // Calcolo RAM
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
+    const ram = (usedMem / 1024 / 1024).toFixed(2); // CORRETTO: definita la variabile ram in MB
     const percentUsed = ((usedMem / totalMem) * 100).toFixed(2);
 
     const botStartTime = new Date(Date.now() - uptimeMs);
@@ -43,7 +45,6 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`
 .trim()
-
 
     await conn.sendMessage(m.chat, {
       text: textMsg,
@@ -84,4 +85,4 @@ handler.tags = ['info'];
 handler.command = /^(ping)$/i;
 handler.admin = false;
 
-export default handler;
+export default handler; 
