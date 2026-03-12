@@ -7,7 +7,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
     let uptime = clockString(process.uptime() * 1000)
 
     let text = `
-╭⭒─ׄ─⊱ *𝐌𝐄𝐍𝐔 - 𝐁𝐎𝐓* ⊰
+╭⭒─ׄ─⊱ *𝐌𝐄𝐍𝐔 - 𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓* ⊰
 ✦ 👤 \`Utente:\` *${name}*
 ✧ 🪐 \`Attivo da:\` *${uptime}*
 ╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒
