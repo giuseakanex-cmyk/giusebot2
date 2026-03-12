@@ -30,27 +30,23 @@ let handler = async (m, { conn, usedPrefix }) => {
     });
 
     const textMsg =`
-╔══════════════════════╗
-        ⚡ 𝐏𝐈𝐍𝐆 ⚡
-   𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹 𝚩𝚯𝐓
-╚══════════════════════╝
+✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦
+⋆   𝐋 𝐄 𝐆 𝐀 𝐌  𝐁 𝐎 𝐓   ⋆
+✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦
 
-𝐒𝐘𝐒𝐓𝐄𝐌 𝐌𝐎𝐍𝐈𝐓𝐎𝐑
-━━━━━━━━━━━━━━━━
-⏳ 𝐔𝐏𝐓𝐈𝐌𝐄
-➤ ${activationTime}
-⚡ 𝐋𝐀𝐓𝐄𝐍𝐙𝐀
-➤ ${speed} ms
-💾 𝐔𝐒𝐎 𝐑𝐀𝐌
-➤ ${percentUsed}%
+⋆ 𝐏𝐢𝐧𝐠 ➻ ${latenza} ms
+⋆ 𝐔𝐩𝐭𝐢𝐦𝐞 ➻ ${uptimeStr}
+⋆ 𝐑𝐀𝐌 ➻ ${ram} MB
+
 👑 𝐎𝐖𝐍𝐄𝐑
 ➤ 𝐆𝐈𝐔𝐒𝚵
-━━━━━━━━━━━━━━━━
-`.trim();
+
+✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`.trim()
+
 
     await conn.sendMessage(m.chat, {
       text: textMsg,
-      footer: "ꉧ𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹ꨄ 𝚩𝚯𝐓ꉧ",
+      footer: "𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓",
       buttons: [
         { buttonId: usedPrefix + "ping", buttonText: { displayText: "📡 𝐑𝐢𝐟𝐚𝐢 𝐏𝐢𝐧𝐠" }, type: 1 },
         { buttonId: usedPrefix + "menu", buttonText: { displayText: "✧ 𝐌𝐞𝐧𝐮 ✧" }, type: 1 },
