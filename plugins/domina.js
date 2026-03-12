@@ -49,7 +49,7 @@ let handler = async (m, { conn, participants, isBotAdmin }) => {
 │  ☣️  *𝐆𝐑𝐔𝐏𝐏𝐎 𝐒𝐕𝐔𝐎𝐓𝐀𝐓𝐎* ☣️  │
 ╰──────────────────────╯
 
-📣 *𝐃𝐀 𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮 𝚩𝚯𝐓*
+📣 *𝐃𝐀 𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓*
 
 *𝐆𝐑𝐔𝐏𝐏𝐎 𝐒𝐕𝐔𝐎𝐓𝐀𝐓𝐎,𝐄𝐍𝐓𝐑𝐀𝐓𝐄 𝐓𝐔𝐓𝐓𝐈 𝐐𝐔𝐈.:*
 https://chat.whatsapp.com/Edk57DqBQyiD6rXETujdAZ
