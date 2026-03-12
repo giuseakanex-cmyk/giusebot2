@@ -1,51 +1,89 @@
-let handler = async (m, { conn, usedPrefix }) => {
-  const sender = m.sender;
+import fs from 'fs'
+import path from 'path'
 
-  // Controllo se sei owner
-  const isOwner = global.owner.map(o => o[0]).includes(sender);
+let handler = async (m, { conn }) => {
+    // --- 1. SISTEMA DI SICUREZZA (Owner + Admin) ---
+    let isBotOwner = global.owner.some(o => m.sender.includes(o[0])) || m.fromMe
+    let isAdmin = false
 
-  // Controllo se sei admin (solo in gruppo)
-  let isAdmin = false;
-  if (m.isGroup) {
-    try {
-      const metadata = await conn.groupMetadata(m.chat);
-      const participant = metadata.participants.find(p => p.jid === sender);
-      isAdmin = participant?.admin || participant?.superAdmin || false;
-    } catch {}
-  }
+    // Se il comando viene usato in un gruppo, controlla se l'utente è Admin
+    if (m.isGroup) {
+        const groupMetadata = await conn.groupMetadata(m.chat)
+        isAdmin = groupMetadata.participants.some(p => p.id === m.sender && (p.admin === 'admin' || p.admin === 'superadmin'))
+    }
 
-  if (!isOwner && !isAdmin)
-    return m.reply("〘 🛡️ 〙 *`ꪶ͢Solo gli owner o gli admin del bot possono usare questa funzioneꫂ`*");
+    // Se non è né Owner né Admin, blocca tutto
+    if (!isBotOwner && !isAdmin) {
+        return m.reply('🚫 *ACCESSO NEGATO:*\nSolo il mio Creatore o gli Admin del gruppo possono svuotare la cache.')
+    }
+    // ------------------------------------------------
 
-  // Numero casuale da 0 a 5000 (fake)
-  const fakeCount = Math.floor(Math.random() * 5001);
+    const sessionFolder = './alvare' 
+    
+    if (!fs.existsSync(sessionFolder)) {
+        return m.reply('⚠️ *Errore:* La cartella della sessione non è stata trovata.')
+    }
 
-  const text = `
-╔══════════════════════╗
-        🗑️ 𝐒𝐕𝐔𝐎𝐓𝐀 𝐀𝐑𝐂𝐇𝐈𝐕𝐈
-   𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹 𝚩𝚯𝐓
-╚══════════════════════╝
+    // Reaction di caricamento
+    await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } })
 
-📂 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 𝐀𝐑𝐂𝐇𝐈𝐕𝐈
-━━━━━━━━━━━━━━━━
-➤ 💨 𝐒𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢 ${fakeCount} 𝐚𝐫𝐜𝐡𝐢𝐯𝐢 𝐭𝐞𝐦𝐩𝐨𝐫𝐚𝐧𝐞𝐢!
-⚡ 𝐎𝐫𝐚 𝐬𝐨𝐧𝐨 𝐩𝐢ù 𝐯𝐞𝐥𝐨𝐜𝐞, 𝐠𝐫𝐚𝐳𝐢𝐞 𝐩𝐞𝐫 𝐚𝐯𝐞𝐫𝐦𝐢 𝐬𝐯𝐮𝐨𝐭𝐚𝐭𝐨 𝐛𝐚𝐛𝐲😏
-━━━━━━━━━━━━━━━━
-`;
+    let deletedFiles = 0
+    let freedBytes = 0
+    let files = fs.readdirSync(sessionFolder)
+    const fileSalvavita = 'creds.json'
 
-  await conn.sendMessage(m.chat, {
-    text,
-    footer: "ꉧ𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮 𝚩𝚯𝐓ꉧ",
-    buttons: [
-      { buttonId: usedPrefix + "ds", buttonText: { displayText: "🗑️ 𝐑𝐢𝐟𝐚𝐢 𝐝𝐬" }, type: 1 },
-      { buttonId: usedPrefix + "ping", buttonText: { displayText: "✧ 𝐏𝐢𝐧𝐠 ✧" }, type: 1 }
-    ],
-    headerType: 1
-  });
-};
+    for (let file of files) {
+        if (file !== fileSalvavita) {
+            try {
+                let filePath = path.join(sessionFolder, file)
+                let stats = fs.statSync(filePath)
+                freedBytes += stats.size 
+                
+                fs.unlinkSync(filePath)
+                deletedFiles++
+            } catch (e) {
+                console.error(`❌ Errore nell'eliminare ${file}:`, e)
+            }
+        }
+    }
 
-handler.command = ['ds'];
-handler.group = true;
+    let freedMB = (freedBytes / 1024 / 1024).toFixed(2)
 
-// ✅ Non usare handler.owner = true, controllo manuale fatto sopra
-export default handler;
+    let txt = `
+┏━━━━━━ ≪ 🧹 ≫ ━━━━━━┓
+     *𝐒𝐘𝐒𝐓𝐄𝐌 𝐂𝐋𝐄𝐀𝐍𝐔𝐏*
+┗━━━━━━ ≪ 🧹 ≫ ━━━━━━┛
+
+✅ *𝐎𝐭𝐭𝐢𝐦𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚!*
+
+🗑️ *𝐅𝐢𝐥𝐞 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢:* ${deletedFiles}
+💾 *𝐒𝐩𝐚𝐳𝐢𝐨 𝐥𝐢𝐛𝐞𝐫𝐚𝐭𝐨:* ${freedMB} MB
+🛡️ *𝐂𝐨𝐧𝐧𝐞𝐬𝐬𝐢𝐨𝐧𝐞:* Sicura (creds.json)
+⚡ *𝐄𝐬𝐞𝐠𝐮𝐢𝐭𝐨 𝐝𝐚:* @${m.sender.split('@')[0]}
+
+✨ _LegamBot Cache Manager_`.trim()
+
+    await conn.sendMessage(m.chat, { 
+        text: txt,
+        mentions: [m.sender], // Tagga chi ha eseguito il comando
+        contextInfo: {
+            externalAdReply: {
+                title: "⚙️ CACHE CLEARED SUCCESSFULLY",
+                body: `Liberati ${freedMB} MB di RAM e Disco`,
+                thumbnailUrl: "https://files.catbox.moe/k37h9r.jpg", 
+                sourceUrl: "https://github.com/giuseakanex-cmyk/legambot",
+                mediaType: 1,
+                renderLargerThumbnail: true 
+            }
+        }
+    }, { quoted: m })
+
+    await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } })
+}
+
+handler.command = ['ds', 'clear', 'clean']
+
+// NOTA BENE: Ho rimosso "handler.owner = true" alla fine,
+// perché ora il controllo lo facciamo in modo più intelligente in cima al codice!
+
+export default handler
