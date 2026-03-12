@@ -1,4 +1,4 @@
-const MENU_IMAGE_URL = 'https://i.ibb.co/9MyQxr1/IMG-1821.png';
+const MENU_IMAGE_URL = 'https://i.ibb.co/5gt7Zdvf/IMG-1823.png';
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
