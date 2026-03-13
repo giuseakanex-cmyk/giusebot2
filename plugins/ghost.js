@@ -1,15 +1,14 @@
 let handler = async (m, { conn, command, isOwner, isAdmin, usedPrefix }) => {
-    // Sicurezza: solo tu o gli admin potete addormentare/svegliare il bot
+    // Sicurezza
     if (!isOwner && !isAdmin) return m.reply('❌ Solo gli Admin o Giuse possono evocare questa magia.')
 
-    // Assicuriamoci che il database per questa chat esista
     global.db.data.chats[m.chat] = global.db.data.chats[m.chat] || {}
     let chat = global.db.data.chats[m.chat]
 
     if (command === 'off' || command === 'ghost') {
         if (chat.isBanned) return m.reply('⟡ _Il bot è già nell\'ombra in questo gruppo._')
         
-        chat.isBanned = true // Questo dice all'handler di ignorare i messaggi
+        chat.isBanned = true 
         
         let txt = `
 ⊹ ࣪ ˖ ✦ ━━ 𝐆 𝐇 𝐎 𝐒 𝐓   𝐌 𝐎 𝐃 𝐄 ━━ ✦ ˖ ࣪ ⊹
@@ -23,15 +22,13 @@ let handler = async (m, { conn, command, isOwner, isAdmin, usedPrefix }) => {
 👑 𝐎𝐖𝐍𝐄𝐑 ➤ 𝐆𝐈𝐔𝐒𝚵
 ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`.trim()
 
-        await conn.sendMessage(m.chat, {
-            image: { url: 'https://files.catbox.moe/pyp87f.jpg' }, // La tua Pixel Art funzionante
-            caption: txt
-        }, { quoted: m })
+        // Niente più immagini fallate, solo testo elegante
+        await conn.sendMessage(m.chat, { text: txt }, { quoted: m })
 
     } else if (command === 'on') {
         if (!chat.isBanned) return m.reply('⟡ _Il bot è già sveglio e operativo._')
         
-        chat.isBanned = false // Risveglia il bot
+        chat.isBanned = false 
         
         let txt = `
 ⊹ ࣪ ˖ ✦ ━━━ 𝐎 𝐍 𝐋 𝐈 𝐍 𝐄 ━━━ ✦ ˖ ࣪ ⊹
@@ -44,10 +41,7 @@ let handler = async (m, { conn, command, isOwner, isAdmin, usedPrefix }) => {
 👑 𝐎𝐖𝐍𝐄𝐑 ➤ 𝐆𝐈𝐔𝐒𝚵
 ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`.trim()
 
-        await conn.sendMessage(m.chat, {
-            image: { url: 'https://files.catbox.moe/pyp87f.jpg' }, 
-            caption: txt
-        }, { quoted: m })
+        await conn.sendMessage(m.chat, { text: txt }, { quoted: m })
     }
 }
 
