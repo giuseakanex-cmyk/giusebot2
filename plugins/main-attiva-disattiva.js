@@ -6,7 +6,6 @@ const PERM = {
   sam: 'sam',
 };
 
-// ... [La lista featureRegistry e i Set rimangono uguali, per brevità di lettura non ti cambio le variabili interne]
 const featureRegistry = [
   { key: 'welcome', store: 'chat', perm: PERM.ADMIN, aliases: ['benvenuto'], groupOnly: true, name: '👋 Welcome', desc: 'Messaggio di benvenuto' },
   { key: 'goodbye', store: 'chat', perm: PERM.ADMIN, aliases: ['addio'], groupOnly: true, name: '🚪 Addio', desc: 'Messaggio di addio' },
@@ -33,7 +32,6 @@ const featureRegistry = [
   { key: 'antiLink2', store: 'chat', perm: PERM.ADMIN, aliases: ['antilink2'], name: '🌐❌ Antilink Social', desc: 'Blocca social link' },
   { key: 'reaction', store: 'chat', perm: PERM.ADMIN, aliases: ['reazioni'], groupOnly: true, name: '😎 Reazioni', desc: 'Reazioni automatiche' },
   { key: 'autolevelup', store: 'chat', perm: PERM.ADMIN, aliases: ['autolivello'], name: '⬆️ Autolivello', desc: 'Messaggio livello' },
-  // ... Tutti gli altri tuoi comandi antilink specifici rimangono ...
   { key: 'antiprivato', store: 'bot', perm: PERM.OWNER, aliases: ['antipriv'], name: '🔒 Blocco privato', desc: 'Blocca chat privata' },
   { key: 'soloe', store: 'bot', perm: PERM.sam, aliases: ['solocreatore'], name: '👑 Solocreatore', desc: 'Solo owner' },
   { key: 'multiprefix', store: 'bot', perm: PERM.OWNER, aliases: ['multiprefisso'], onToggle: 'multiprefix', name: '🔣 Multiprefix', desc: 'Più prefissi' },
@@ -152,7 +150,7 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
     const ownerSections = createSections(ownerz);
 
     const adminCard = {
-      image: { url: 'https://i.ibb.co/6N6sXXv/giusebot.jpg' }, // Immagine Giusebot
+      image: { url: 'https://files.catbox.moe/pyp87f.jpg' }, // <--- FIX: Immagine riparata!
       title: '『 👥 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 𝐀𝐃𝐌𝐈𝐍 』',
       body: '✧ _Gestisci le funzioni di sicurezza e intrattenimento del gruppo._',
       footer: '*─ׄ✦☾⋆⁺₊✧ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✧₊⁺⋆☽✦─ׅ⭒*',
@@ -162,7 +160,7 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
     let cards = [adminCard];
     if (isOwner || isSam) {
       cards.push({
-        image: { url: 'https://i.ibb.co/kVdFLyGL/sam.jpg' },
+        image: { url: 'https://files.catbox.moe/pyp87f.jpg' }, // <--- FIX: Immagine riparata per sicurezza!
         title: '『 👑 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 𝐎𝐖𝐍𝐄𝐑 』',
         body: '✧ _Gestisci il core e i limiti globali del bot._',
         footer: '*─ׄ✦☾⋆⁺₊✧ 𝐆𝐈𝐔𝐒𝐄𝐁𝐎𝐓 ✧₊⁺⋆☽✦─ׅ⭒*',
@@ -231,6 +229,6 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isS
 
 handler.help = ['attiva', 'disattiva'];
 handler.tags = ['main'];
-handler.command = ['enable', 'disable', 'attiva', 'disattiva', 'on', 'off'];
+handler.command = ['enable', 'disable', 'attiva', 'disattiva']; // <--- FIX: Rimosso 'on' e 'off' !
 
 export default handler;
