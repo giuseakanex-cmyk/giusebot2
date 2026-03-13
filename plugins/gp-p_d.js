@@ -1,18 +1,32 @@
-var handler = async (m, { conn, text, command }) => {
+let handler = async (m, { conn, text, command }) => {
   let action, successMsg, errorMsg, helpMsg;
+
   if (['promote', 'promuovi', 'p'].includes(command)) {
     action = 'promote';
-    successMsg = `『 ✅ 』 \`𝐆𝐢𝐮𝐬𝐞 𝐫𝐢𝐩𝐨𝐧𝐞 𝐢𝐧 𝐭𝐞 𝐦𝐨𝐥𝐭𝐚 𝐟𝐢𝐝𝐮𝐜𝐢𝐚 𝐩𝐞𝐫 𝐚𝐯𝐞𝐫𝐭𝐢 𝐝𝐚𝐭𝐨 𝐪𝐮𝐞𝐬𝐭𝐨 𝐩𝐫𝐢𝐯𝐢𝐥𝐞𝐠𝐢𝐨,𝐧𝐨𝐧 𝐝𝐞𝐥𝐮𝐝𝐞𝐫𝐥𝐨.\``;
-    errorMsg = `『 ❌ 』 \`Errore nel promuovere l'utente.\``;
-    helpMsg = `『 👤 』 \`A chi vuoi dare amministratore?\``;
+    successMsg = `
+⊹ ࣪ ˖ ✦ ━━ 𝐏 𝐑 𝐎 𝐌 𝐎 𝐙 𝐈 𝐎 𝐍 𝐄 ━━ ✦ ˖ ࣪ ⊹
+
+👑 \`𝐆𝐢𝐮𝐬𝐞 𝐫𝐢𝐩𝐨𝐧𝐞 𝐢𝐧 𝐭𝐞 𝐦𝐨𝐥𝐭𝐚 𝐟𝐢𝐝𝐮𝐜𝐢𝐚 𝐩𝐞𝐫 𝐚𝐯𝐞𝐫𝐭𝐢 𝐝𝐚𝐭𝐨 𝐪𝐮𝐞𝐬𝐭𝐨 𝐩𝐫𝐢𝐯𝐢𝐥𝐞𝐠𝐢𝐨, 𝐧𝐨𝐧 𝐝𝐞𝐥𝐮𝐝𝐞𝐫𝐥𝐨.\`
+
+✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`.trim();
+    errorMsg = `⟡ _Errore: Impossibile promuovere l'utente._`;
+    helpMsg = `⟡ _Specifica a chi vuoi dare i poteri da amministratore._`;
+
   } else if (['demote', 'retrocedi', 'r'].includes(command)) {
     action = 'demote';
-    successMsg = `『 ✅ 』 \`𝐍𝐨𝐧 𝐡𝐚𝐢 𝐬𝐚𝐩𝐮𝐭𝐨 𝐬𝐟𝐫𝐮𝐭𝐭𝐚𝐫𝐞 𝐥’𝐨𝐜𝐜𝐚𝐬𝐢𝐨𝐧𝐞,𝐚𝐝𝐞𝐬𝐬𝐨 𝐭𝐢 𝐯𝐞𝐫𝐫𝐚𝐧𝐧𝐨 𝐚𝐭𝐭𝐫𝐢𝐛𝐮𝐢𝐭𝐞 𝐝𝐞𝐥𝐥𝐞 𝐜𝐨𝐧𝐬𝐞𝐠𝐮𝐞𝐧𝐳𝐞.𝐋𝐨 𝐬𝐭𝐚𝐟𝐟 𝐧𝐨𝐧 𝐟𝐚 𝐩𝐞𝐫 𝐭𝐞 𝐠𝐮𝐚𝐠𝐥𝐢ò.\``;
-    errorMsg = `『 ❌ 』 \`Errore nel retrocedere l'utente.\``;
-    helpMsg = `『 👤 』 \`A chi vuoi togliere amministratore?\``;
+    successMsg = `
+⊹ ࣪ ˖ ✦ ━━ 𝐃 𝐄 𝐂 𝐋 𝐀 𝐒 𝐒 𝐀 𝐓 𝐎 ━━ ✦ ˖ ࣪ ⊹
+
+🔻 \`𝐍𝐨𝐧 𝐡𝐚𝐢 𝐬𝐚𝐩𝐮𝐭𝐨 𝐬𝐟𝐫𝐮𝐭𝐭𝐚𝐫𝐞 𝐥’𝐨𝐜𝐜𝐚𝐬𝐢𝐨𝐧𝐞, 𝐚𝐝𝐞𝐬𝐬𝐨 𝐭𝐢 𝐯𝐞𝐫𝐫𝐚𝐧𝐧𝐨 𝐚𝐭𝐭𝐫𝐢𝐛𝐮𝐢𝐭𝐞 𝐝𝐞𝐥𝐥𝐞 𝐜𝐨𝐧𝐬𝐞𝐠𝐮𝐞𝐧𝐳𝐞. 𝐋𝐨 𝐬𝐭𝐚𝐟𝐟 𝐧𝐨𝐧 𝐟𝐚 𝐩𝐞𝐫 𝐭𝐞 𝐠𝐮𝐚𝐠𝐥𝐢𝐨̀.\`
+
+✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`.trim();
+    errorMsg = `⟡ _Errore: Impossibile retrocedere l'utente._`;
+    helpMsg = `⟡ _Specifica a chi vuoi togliere i poteri da amministratore._`;
+
   } else {
     return;
   }
+
 
   let number;
   if (m.mentionedJid && m.mentionedJid[0]) {
