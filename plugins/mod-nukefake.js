@@ -14,7 +14,7 @@ const handler = async (m, { conn, participants, isAdmin, isOwner }) => {
     // 🔥 PRIMO MESSAGGIO-GIUSEBOT
     await conn.sendMessage(m.chat, {
       text: `
-𝗦𝗜𝗘𝗧𝗘 𝗦𝗧𝗔𝗧𝗜 𝗗𝗢𝗠𝗜𝗡𝗔𝗧𝗜 𝗗𝗔 𝗚𝗜𝗨𝗦𝗘 𝗘 𝗖𝗛𝗔𝗥𝗠𝗔𝗡𝗗𝗘𝗥🔥
+𝗦𝗜𝗘𝗧𝗘 𝗦𝗧𝗔𝗧𝗜 𝗗𝗢𝗠𝗜𝗡𝗔𝗧𝗜 𝗗𝗔 𝐆𝐈𝐔𝐒𝚵 𝗘 𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓🔥
 `.trim()
     })
 
@@ -27,7 +27,7 @@ const handler = async (m, { conn, participants, isAdmin, isOwner }) => {
 𝐄𝐍𝐓𝐑𝐀𝐓𝐄 𝐓𝐔𝐓𝐓𝐈 𝐐𝐔𝐈:
 ${link}
 
-👑𝗟𝗔 𝗖𝗢𝗠𝗠𝗨𝗡𝗜𝗧𝗬 𝗗𝗜 𝗖𝗛𝗔𝗥𝗠𝗔𝗡𝗗𝗘𝗥 𝗩𝗜 𝗔𝗦𝗣𝗘𝗧𝗧𝗔🔥
+👑𝗟𝗔 𝗖𝗢𝗠𝗠𝗨𝗡𝗜𝗧𝗬 𝗗𝗜 𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓 𝗩𝗜 𝗔𝗦𝗣𝗘𝗧𝗧𝗔🔥
 `.trim(),
       mentions: users
     })
