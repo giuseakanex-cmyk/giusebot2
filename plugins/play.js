@@ -1,5 +1,6 @@
 import yts from 'yt-search';
 import fetch from 'node-fetch';
+import fg from 'api-dylux';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
@@ -11,7 +12,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`『 🎵 』 \`Inserisci il titolo della canzone!\`\n\n⟡ _Esempio:_ ${usedPrefix + command} Push it by Kid Yugi`);
 
   try {
-    await m.reply('⏳ _Ricerca della traccia..._');
+    await m.reply('⏳ _Ricerca e avvio Protocollo Fantasma..._');
 
     // 1. RICERCA INFALLIBILE
     let search = await yts(text);
@@ -25,80 +26,118 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎥 _Aggancio del file video per estrazione locale..._`;
+    infoMsg += `🎧 _Infiltrazione server in corso... (Tentativi silenziosi)_`;
 
     await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
-    let videoUrl = null;
+    // Funzione per scaricare file aggirando i blocchi anti-bot
+    const getBuffer = async (url) => {
+        let res = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Referer': 'https://youtube.com/'
+            }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return Buffer.from(await res.arrayBuffer());
+    };
 
-    // 3. SCARICHIAMO IL VIDEO (Gli MP4 cadono molto meno degli MP3)
-    const videoApis = [
-        `https://api.siputzx.my.id/api/d/ytmp4?url=${vid.url}`,
-        `https://api.vreden.my.id/api/ytmp4?url=${vid.url}`,
-        `https://api.agatz.xyz/api/ytmp4?url=${vid.url}`
+    // Funzione per usare il tuo FFmpeg per strappare l'audio dai video MP4
+    const convertVideoToAudio = async (videoBuffer, id) => {
+        let tmpDir = path.join(process.cwd(), 'temp');
+        if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+        
+        let randomName = `${id}_${Date.now()}`;
+        let videoPath = path.join(tmpDir, `${randomName}.mp4`);
+        let audioPath = path.join(tmpDir, `${randomName}.mp3`);
+
+        fs.writeFileSync(videoPath, videoBuffer);
+        await execPromise(`ffmpeg -i "${videoPath}" -vn -ar 44100 -ac 2 -b:a 192k "${audioPath}"`);
+        
+        let audioBuffer = fs.readFileSync(audioPath);
+        
+        fs.unlinkSync(videoPath);
+        fs.unlinkSync(audioPath);
+        
+        return audioBuffer;
+    };
+
+    let finalAudioBuffer = null;
+
+    // 3. LE 6 STRATEGIE D'ATTACCO (Se una fallisce, passa subito all'altra)
+    const strategies = [
+        // Strategia 1: api-dylux (Libreria interna, MP3)
+        async () => {
+            let res = await fg.yta(vid.url);
+            if (!res || !res.dl_url) throw new Error();
+            return await getBuffer(res.dl_url);
+        },
+        // Strategia 2: Siputzx API (MP3 diretto)
+        async () => {
+            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (!json?.data?.dl) throw new Error();
+            return await getBuffer(json.data.dl);
+        },
+        // Strategia 3: Vreden API (MP3 diretto)
+        async () => {
+            let res = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (!json?.result?.download?.url) throw new Error();
+            return await getBuffer(json.result.download.url);
+        },
+        // Strategia 4: GiftedTech API (MP3 diretto)
+        async () => {
+            let res = await fetch(`https://api.giftedtech.my.id/api/download/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            let url = json?.result?.download?.url || json?.result?.url;
+            if (!url) throw new Error();
+            return await getBuffer(url);
+        },
+        // Strategia 5: api-dylux (SCARICA VIDEO -> ESTRAE AUDIO LOCALE)
+        async () => {
+            let res = await fg.ytv(vid.url);
+            if (!res || !res.dl_url) throw new Error();
+            return await convertVideoToAudio(await getBuffer(res.dl_url), vid.videoId);
+        },
+        // Strategia 6: Siputzx (SCARICA VIDEO -> ESTRAE AUDIO LOCALE)
+        async () => {
+            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${vid.url}`);
+            let json = await res.json();
+            if (!json?.data?.dl) throw new Error();
+            return await convertVideoToAudio(await getBuffer(json.data.dl), vid.videoId);
+        }
     ];
 
-    for (let api of videoApis) {
+    // ESECUZIONE DEL CICLO: Il bot prova silenziosamente ogni strada
+    for (let i = 0; i < strategies.length; i++) {
         try {
-            let res = await fetch(api);
-            let json = await res.json();
-            
-            // Ogni API ha una risposta diversa, le controlliamo tutte
-            if (json.data?.dl) videoUrl = json.data.dl;
-            else if (json.result?.download?.url) videoUrl = json.result.download.url;
-            else if (json.data?.download) videoUrl = json.data.download;
-
-            if (videoUrl) {
-                console.log("✅ API Video Trovata!");
-                break;
+            console.log(`[LEGAM BOT] Tentativo Strategia ${i + 1}...`);
+            finalAudioBuffer = await strategies[i]();
+            if (finalAudioBuffer) {
+                console.log(`[LEGAM BOT] ✅ Strategia ${i + 1} riuscita!`);
+                break; // Se funziona, ferma il ciclo!
             }
         } catch (e) {
-            console.log("⚠️ Un'API video ha fallito, passo alla prossima...");
+            console.log(`[LEGAM BOT] ⚠️ Strategia ${i + 1} fallita, passo alla prossima.`);
         }
     }
 
-    if (!videoUrl) throw new Error("Anche i server video sono irraggiungibili in questo momento.");
+    if (!finalAudioBuffer) {
+        throw new Error("I server globali di conversione sono totalmente irraggiungibili in questo momento.");
+    }
 
-    // 4. DOWNLOAD E CONVERSIONE LOCALE
-    // Prepariamo la cartella temporanea
-    let tmpDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
-    
-    // Creiamo due file: uno per scaricare il video, uno per salvare l'audio
-    let randomName = `${vid.videoId}_${Date.now()}`;
-    let videoPath = path.join(tmpDir, `${randomName}.mp4`);
-    let audioPath = path.join(tmpDir, `${randomName}.mp3`);
-
-    // Scarichiamo il video MP4
-    let vidRes = await fetch(videoUrl);
-    if (!vidRes.ok) throw new Error("Errore nel download del video base.");
-    
-    let bufferVid = Buffer.from(await vidRes.arrayBuffer());
-    fs.writeFileSync(videoPath, bufferVid);
-
-    // Diamo in pasto il video a FFmpeg per STRAPPARE l'audio
-    // -vn (toglie il video) -ar 44100 -ac 2 -b:a 192k (qualità audio ottima)
-    await execPromise(`ffmpeg -i "${videoPath}" -vn -ar 44100 -ac 2 -b:a 192k "${audioPath}"`);
-
-    // 5. INVIO DELLA CANZONE
-    if (!fs.existsSync(audioPath)) throw new Error("Estrazione locale dell'audio fallita.");
-
-    let audioFinale = fs.readFileSync(audioPath);
-
+    // 4. INVIO DELLA CANZONE TROVATA
     await conn.sendMessage(m.chat, {
-        audio: audioFinale,
+        audio: finalAudioBuffer,
         mimetype: 'audio/mpeg',
         fileName: `${vid.title}.mp3`,
         ptt: false 
     }, { quoted: m });
 
-    // 6. PULIZIA DELLA SCENA DEL CRIMINE (Cancelliamo i file pesanti)
-    fs.unlinkSync(videoPath);
-    fs.unlinkSync(audioPath);
-
   } catch (e) {
     console.error('[ERRORE PLAY]', e);
-    m.reply(`『 ❌ 』 \`Errore:\`\n${e.message}`);
+    m.reply(`『 ❌ 』 \`Errore Fatale:\`\n${e.message}`);
   }
 };
 
