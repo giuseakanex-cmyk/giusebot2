@@ -1,4 +1,4 @@
-//API KEYS BY GIUSE,CHIEDERE PRIMA DI UTILIZZARE
+//API DI GIUSE NON PUBBLICHE
 import yts from 'yt-search';
 import fg from 'api-dylux';
 import fetch from 'node-fetch';
@@ -15,7 +15,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
 
     if (vid.seconds > 900) {
-        return m.reply('❌ *Il file è troppo lungo e pesante per essere elaborato (max 15 min).*');
+        return m.reply('❌ *Il file è troppo lungo (max 15 min).*');
     }
 
     // 2. Manda l'immagine estetica
@@ -31,47 +31,49 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         caption: infoMsg
     }, { quoted: m });
 
-    let videoUrl = null;
+    let audioUrl = null;
 
-    // --- MOTORE DI RICERCA VIDEO (MP4) ---
-    // Usiamo le API del video perché sappiamo che funzionano bene!
+    // --- MOTORE DI RICERCA MULTIPLO BLINDATO ---
     
+    // Tentativo 1: API Ryzendesu (Attualmente la più stabile)
     try {
-        let video = await fg.ytv(vid.url);
-        if (video && video.dl_url) videoUrl = video.dl_url;
-    } catch (e1) {
-        if (!videoUrl) {
-            try {
-                let res = await fetch(`https://api.vreden.my.id/api/ytmp4?url=${vid.url}`);
-                let json = await res.json();
-                if (json.result?.download?.url) videoUrl = json.result.download.url;
-            } catch (e2) {
-                try {
-                    let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${vid.url}`);
-                    let json = await res.json();
-                    if (json.data?.dl) videoUrl = json.data.dl;
-                } catch (e3) {
-                    throw new Error("Tutti i server sono irraggiungibili.");
-                }
-            }
-        }
+        let res1 = await fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${vid.url}`);
+        let json1 = await res1.json();
+        if (json1.url) audioUrl = json1.url;
+    } catch (e) {}
+
+    // Tentativo 2: API Vreden (Fallback 1)
+    if (!audioUrl) {
+        try {
+            let res2 = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
+            let json2 = await res2.json();
+            if (json2.result?.download?.url) audioUrl = json2.result.download.url;
+        } catch (e) {}
     }
 
-    if (!videoUrl) throw new Error("Errore estrazione link.");
+    // Tentativo 3: Dylux (Fallback 2)
+    if (!audioUrl) {
+        try {
+            let audio = await fg.yta(vid.url);
+            if (audio && audio.dl_url) audioUrl = audio.dl_url;
+        } catch (e) {}
+    }
 
-    // 🏆 IL TRUCCO MAGICO: Scarichiamo il video ma lo inviamo come AUDIO
-    let resBuffer = await fetch(videoUrl);
+    if (!audioUrl) throw new Error("Tutte le API di estrazione sono down.");
+
+    // 🏆 IL FIX DEFINITIVO: arrayBuffer() corretto per la tua versione
+    let resBuffer = await fetch(audioUrl);
     let mediaBuffer = Buffer.from(await resBuffer.arrayBuffer());
 
     await conn.sendMessage(m.chat, {
         audio: mediaBuffer, 
-        mimetype: 'audio/mp4', // Diciamo a WhatsApp che è un audio basato su mp4 (M4A)
+        mimetype: 'audio/mpeg',
         fileName: `${vid.title}.mp3`,
-        ptt: false // PTT = false significa che appare come canzone, non come nota vocale
+        ptt: false 
     }, { quoted: m });
 
   } catch (e) {
-    console.error(e);
+    console.error('[ERRORE PLAY]', e);
     m.reply('❌ _Scusa, non riesco ad estrarre l\'audio in questo momento. Riprova più tardi!_');
   }
 };
