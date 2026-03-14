@@ -38,7 +38,7 @@ const handler = async (m, { conn }) => {
   const name = '@' + who.split('@')[0];
 
   const caption = `
-╭━✧𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹ꨄ 𝚩𝚯𝐓✦╮
+╭━✧  𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓  ✦╮
   🛡️𝗣𝗥𝗘𝗦𝗖𝗘𝗟𝗧𝗢 𝗗𝗘𝗟 𝗖𝗔𝗭𝗭𝗢🛡️
 ╰━━━━━━✧✦━━━━━━╯
 
