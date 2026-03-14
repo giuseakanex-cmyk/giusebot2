@@ -20,7 +20,9 @@ let handler = async (m, { conn, text, command }) => {
   }
 }
 
-handler.command = /^(esci||out|leavegc|leave|voltati)$/i
+// CORREZIONE APPLICATA: rimosso il doppio pipe || che causava il bug
+handler.command = /^(esci|out|leavegc|leave|voltati)$/i
 handler.group = true
 handler.owner = true
+
 export default handler
