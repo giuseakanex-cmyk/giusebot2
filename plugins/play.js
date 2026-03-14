@@ -1,57 +1,78 @@
-//BY GIUSE API KEYS
 import yts from 'yt-search';
-import fg from 'api-dylux';
 import fetch from 'node-fetch';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
+  if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Push it by Kid yugi`);
 
   try {
-    await m.reply('⏳ _Sto cercando la traccia nei meandri di YouTube..._');
+    await m.reply('⏳ _Sondando i server di YouTube, attendi..._');
 
     // FASE 1: Ricerca
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
-    if (vid.seconds > 900) return m.reply('❌ *Il brano supera i 15 minuti, è troppo pesante.*');
+    if (vid.seconds > 900) return m.reply('❌ *Il brano supera i 15 minuti, è troppo pesante per WhatsApp.*');
 
-    // FASE 2: Invio Dati Estetici
+    // FASE 2: Grafica Legam Bot
     let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Estrazione audio in corso, attendi..._`;
+    infoMsg += `🎧 _Avvio protocollo di estrazione audio..._`;
 
     await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
-    // FASE 3: L'Assalto delle 5 API (Mitragliatrice)
     let audioUrl = null;
 
-    // Array con i 5 server di estrazione più potenti attualmente in circolazione
-    const serverDiEstrazione = [
-        async () => { let r = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`); let j = await r.json(); return j.data.dl; },
-        async () => { let d = await fg.yta(vid.url); return d.dl_url; },
-        async () => { let r = await fetch(`https://aemt.me/youtube?url=${vid.url}`); let j = await r.json(); return j.result.mp3; },
-        async () => { let r = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`); let j = await r.json(); return j.result.download.url; },
-        async () => { let r = await fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${vid.url}`); let j = await r.json(); return j.url || j.data.url; }
-    ];
+    // FASE 3: I 3 SERVER SUPREMI
+    
+    // TENTATIVO 1: L'artiglieria pesante (Cobalt)
+    try {
+        let resCobalt = await fetch('https://api.cobalt.tools/api/json', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            },
+            body: JSON.stringify({ url: vid.url, isAudioOnly: true, aFormat: 'mp3' })
+        });
+        let jsonCobalt = await resCobalt.json();
+        if (jsonCobalt.url) audioUrl = jsonCobalt.url;
+    } catch (e) {
+        console.log("Cobalt fallito, passo al prossimo...");
+    }
 
-    // Il bot le prova tutte, una per volta, finché una non funziona
-    for (let estrai of serverDiEstrazione) {
+    // TENTATIVO 2: Server Sudamericano (Deliriuss)
+    if (!audioUrl) {
         try {
-            audioUrl = await estrai();
-            if (audioUrl) break; // Se trova il link, esce subito dal ciclo!
+            let resDel = await fetch(`https://deliriussapi-oficial.vercel.app/download/ytmp3?url=${encodeURIComponent(vid.url)}`);
+            let jsonDel = await resDel.json();
+            if (jsonDel.data?.download?.url) audioUrl = jsonDel.data.download.url;
         } catch (e) {
-            continue; // Se il server è morto, passa zitto zitto al prossimo
+            console.log("Deliriuss fallito, passo al prossimo...");
         }
     }
 
-    // Se arrivato fin qui audioUrl è ancora null, vuol dire che è l'apocalisse e sono morti tutti i 5 server
-    if (!audioUrl) throw new Error("Tutti i 5 server di estrazione sono attualmente offline.");
+    // TENTATIVO 3: Dorratz (Ultima spiaggia affidabile)
+    if (!audioUrl) {
+        try {
+            let resDor = await fetch(`https://api.dorratz.com/v2/yt-mp3?url=${encodeURIComponent(vid.url)}`);
+            let jsonDor = await resDor.json();
+            if (jsonDor.data?.download) audioUrl = jsonDor.data.download;
+        } catch (e) {
+            console.log("Dorratz fallito.");
+        }
+    }
 
-    // FASE 4: Download e Invio a WhatsApp
-    let resBuffer = await fetch(audioUrl);
+    if (!audioUrl) throw new Error("Anche i server supremi sono bloccati da YouTube in questo momento.");
+
+    // FASE 4: Download finale e Invio
+    // Aggiungo un User-Agent per ingannare i server e far credere che siamo un browser
+    let resBuffer = await fetch(audioUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+    });
     let mediaBuffer = Buffer.from(await resBuffer.arrayBuffer());
 
     await conn.sendMessage(m.chat, {
@@ -63,7 +84,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   } catch (e) {
     console.error('[ERRORE PLAY]', e);
-    m.reply(`❌ _Errore di sistema:_ ${e.message}\n_Riprova tra qualche minuto._`);
+    m.reply(`❌ *DIAGNOSI ERRORE:*\n${e.message}\n\n_Se l'errore persiste, YouTube ha alzato un nuovo firewall._`);
   }
 };
 
