@@ -1,63 +1,74 @@
 import yts from 'yt-search';
-import ytdl from '@distube/ytdl-core';
+import fetch from 'node-fetch';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Push it by Kid yugi`);
+  if (!text) return m.reply(`⚠️ Inserisci il titolo!`);
 
   try {
-    await m.reply('⏳ _Motore interno avviato, aggancio diretto a YouTube in corso..._');
+    await m.reply('⏳ _Tentativo di aggiramento del blocco CAPTCHA di YouTube..._');
 
     // FASE 1: Ricerca
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
-    if (vid.seconds > 900) return m.reply('❌ *Il brano supera i 15 minuti, è troppo pesante.*');
+    if (vid.seconds > 900) return m.reply('❌ *Troppo lungo (max 15 min).*');
 
     // FASE 2: Grafica Legam Bot
     let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
-    infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Estrazione locale in corso (bypass server attivati)..._`;
+    infoMsg += `🎧 _Infiltrazione nei server in corso..._`;
 
     await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
-    // FASE 3: IL MOTORE INTERNO (@distube/ytdl-core)
-    // Non stiamo più usando API esterne. Il bot scarica il flusso audio direttamente da YT.
-    const stream = ytdl(vid.url, {
-        filter: 'audioonly',
-        quality: 'highestaudio',
-        highWaterMark: 1 << 25 // Buffer aumentato per non far crashare la memoria
-    });
+    let audioUrl = null;
 
-    const chunks = [];
-    
-    // Raccogliamo i pezzi dell'audio man mano che arrivano
-    stream.on('data', (chunk) => {
-        chunks.push(chunk);
-    });
+    // FASE 3: API STEALTH (Aggirano il blocco Bot)
+    const stealthApis = [
+        `https://bk9.fun/download/ytmp3?url=${vid.url}`,
+        `https://api.giftedtech.my.id/api/download/ytmp3?url=${vid.url}`,
+        `https://api.davidcyriltech.my.id/download/ytmp3?url=${vid.url}`,
+        `https://api.agatz.xyz/api/ytmp3?url=${vid.url}`
+    ];
 
-    // Quando ha finito di scaricare tutto, lo unisce e te lo manda
-    stream.on('end', async () => {
-        const mediaBuffer = Buffer.concat(chunks);
-        await conn.sendMessage(m.chat, {
-            audio: mediaBuffer, 
-            mimetype: 'audio/mpeg',
-            fileName: `${vid.title}.mp3`,
-            ptt: false 
-        }, { quoted: m });
-    });
+    for (let api of stealthApis) {
+        try {
+            let res = await fetch(api);
+            let json = await res.json();
+            
+            // Ogni API ha una risposta diversa, il bot le controlla tutte
+            if (json.BK9) audioUrl = json.BK9;
+            else if (json.url) audioUrl = json.url;
+            else if (json.result?.download?.url) audioUrl = json.result.download.url;
+            else if (json.data?.dl) audioUrl = json.data.dl;
+            else if (json.result?.url) audioUrl = json.result.url;
 
-    // Se YouTube riesce a bloccare anche il motore interno, ce lo dice
-    stream.on('error', (err) => {
-        console.error('[ERRORE STREAM YTDL]', err);
-        m.reply(`❌ *ERRORE MOTORE INTERNO:*\n${err.message}\n\n_YouTube sta applicando un blocco totale in questo momento._`);
-    });
+            if (audioUrl) {
+                console.log("✅ API Stealth funzionante trovata!");
+                break; 
+            }
+        } catch (e) {
+            console.log("⚠️ Un'API Stealth è caduta, passo alla prossima...");
+        }
+    }
+
+    if (!audioUrl) throw new Error("Tutti i server stealth sono stati respinti dal CAPTCHA di YouTube.");
+
+    // FASE 4: Download finale
+    let resBuffer = await fetch(audioUrl);
+    let mediaBuffer = Buffer.from(await resBuffer.arrayBuffer());
+
+    await conn.sendMessage(m.chat, {
+        audio: mediaBuffer, 
+        mimetype: 'audio/mpeg',
+        fileName: `${vid.title}.mp3`,
+        ptt: false 
+    }, { quoted: m });
 
   } catch (e) {
     console.error('[ERRORE PLAY]', e);
-    m.reply(`❌ *DIAGNOSI ERRORE GENERALE:*\n${e.message}`);
+    m.reply(`❌ *ERRORE:* ${e.message}\n_YouTube è blindato. Stiamo aspettando che gli hacker aggiornino i server._`);
   }
 };
 
