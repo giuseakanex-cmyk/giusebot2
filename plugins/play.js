@@ -1,13 +1,14 @@
 import yts from 'yt-search';
 import fetch from 'node-fetch';
+import fg from 'api-dylux';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`『 🎵 』 \`Inserisci il titolo della canzone!\`\n\n⟡ _Esempio:_ ${usedPrefix + command} Push it by Kid Yugi`);
 
   try {
-    await m.reply('⏳ _Ricerca della traccia in corso..._');
+    await m.reply('⏳ _Avvio ricerca tattica della traccia..._');
 
-    // FASE 1: Ricerca video su YouTube
+    // FASE 1: Ricerca video
     let search;
     try {
         search = await yts(text);
@@ -25,48 +26,70 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Estrazione audio in corso, attendi..._`;
+    infoMsg += `🎧 _Aggancio ai server Cobalt in corso..._`;
 
     await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
     let audioUrl = null;
 
-    // FASE 3: Motore a Cascata Pulito (Prova 3 API diverse in silenzio)
-    const apiList = [
-        // 1. Siputzx (Attualmente la più stabile)
-        async () => {
-            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
-            let json = await res.json();
-            return json.data?.dl;
-        },
-        // 2. Vreden (Ottima alternativa)
-        async () => {
-            let res = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
-            let json = await res.json();
-            return json.result?.download?.url;
-        },
-        // 3. BK9 (Server Stealth)
-        async () => {
-            let res = await fetch(`https://bk9.fun/download/ytmp3?url=${vid.url}`);
-            let json = await res.json();
-            return json.BK9;
+    // FASE 3: MOTORE COBALT (Bypassa i blocchi di YouTube)
+    try {
+        let resCobalt = await fetch('https://api.cobalt.tools/api/json', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Origin': 'https://cobalt.tools',
+                'Referer': 'https://cobalt.tools/',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+            },
+            body: JSON.stringify({
+                url: vid.url,
+                isAudioOnly: true,
+                aFormat: 'mp3'
+            })
+        });
+        
+        let jsonCobalt = await resCobalt.json();
+        if (jsonCobalt && jsonCobalt.url) {
+            audioUrl = jsonCobalt.url;
+            console.log("✅ Cobalt API ha funzionato!");
         }
-    ];
+    } catch (e) {
+        console.log("⚠️ Cobalt fallito, passo ad API-Dylux...");
+    }
 
-    // Il bot esegue la lista. Appena una funziona, si ferma ed estrae il link.
-    for (const fetchApi of apiList) {
+    // PIANO B: La libreria interna (api-dylux)
+    if (!audioUrl) {
         try {
-            audioUrl = await fetchApi();
-            if (audioUrl) break; 
+            let audioDylux = await fg.yta(vid.url);
+            if (audioDylux && audioDylux.dl_url) {
+                audioUrl = audioDylux.dl_url;
+                console.log("✅ Dylux ha funzionato!");
+            }
         } catch (e) {
-            continue; // Se l'API è morta, ignora l'errore e passa alla successiva
+            console.log("⚠️ Dylux fallito, passo al Piano C...");
         }
     }
 
-    if (!audioUrl) throw new Error("Tutti i server di estrazione sono attualmente bloccati da YouTube.");
+    // PIANO C: Ultima spiaggia (GiftedTech)
+    if (!audioUrl) {
+        try {
+            let resGifted = await fetch(`https://api.giftedtech.my.id/api/download/ytmp3?url=${vid.url}`);
+            let jsonGifted = await resGifted.json();
+            if (jsonGifted.result?.download?.url) audioUrl = jsonGifted.result.download.url;
+            else if (jsonGifted.result?.url) audioUrl = jsonGifted.result.url;
+        } catch (e) {
+            console.log("⚠️ Anche GiftedTech è offline.");
+        }
+    }
 
-    // FASE 4: Download Finale e Invio (con il fix ArrayBuffer)
+    if (!audioUrl) throw new Error("YouTube sta bloccando tutte le estrazioni. I server sono caduti.");
+
+    // FASE 4: Download Finale e Invio
     let audioRes = await fetch(audioUrl);
+    if (!audioRes.ok) throw new Error("Il file audio non è raggiungibile o è corrotto.");
+    
     let arrayBuf = await audioRes.arrayBuffer();
     let mediaBuffer = Buffer.from(arrayBuf);
 
@@ -74,12 +97,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         audio: mediaBuffer,
         mimetype: 'audio/mpeg',
         fileName: `${vid.title}.mp3`,
-        ptt: false // Invia come canzone, non come nota vocale
+        ptt: false 
     }, { quoted: m });
 
   } catch (e) {
     console.error('[ERRORE PLAY]', e);
-    m.reply(`『 ❌ 』 \`Errore:\` I server musicali sono intasati a causa dei blocchi di YouTube. Riprova più tardi!`);
+    m.reply(`『 ❌ 』 \`Sistema In Down:\`\n${e.message}`);
   }
 };
 
@@ -88,4 +111,5 @@ handler.tags = ['downloader'];
 handler.command = /^(play|canzone)$/i;
 
 export default handler;
+
 
