@@ -14,22 +14,37 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     await conn.reply(m.chat, attesaMsg, m);
 
-    // Connessione diretta a Pollinations
-    const randomSeed = Math.floor(Math.random() * 1000000);
-    const apiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?seed=${randomSeed}&width=1024&height=1024&nologo=true`;
+    let mediaBuffer = null;
 
-    // Aggiungiamo un finto browser (User-Agent) per aggirare i blocchi del server
-    let res = await fetch(apiUrl, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    // 🎯 TENTATIVO 1: Pollinations (Versione Pura e Pulita)
+    // Aggiungiamo un numeretto invisibile al testo per assicurarci che non ci dia un'immagine vecchia in memoria (cache)
+    try {
+        let cleanText = text + " " + Math.floor(Math.random() * 10000);
+        let res1 = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(cleanText)}`);
+        
+        if (res1.ok) {
+            let arrayBuffer = await res1.arrayBuffer();
+            mediaBuffer = Buffer.from(arrayBuffer);
         }
-    });
+    } catch (e) {
+        console.log("Pollinations ha fallito, passo al piano B...");
+    }
 
-    if (!res.ok) throw new Error('Il server grafico ha rifiutato la connessione.');
+    // 🛟 TENTATIVO 2: Server di Backup (GiftedTech) in caso di emergenza
+    if (!mediaBuffer) {
+        try {
+            let res2 = await fetch(`https://api.giftedtech.my.id/api/ai/text2img?prompt=${encodeURIComponent(text)}`);
+            if (res2.ok) {
+                let arrayBuffer = await res2.arrayBuffer();
+                mediaBuffer = Buffer.from(arrayBuffer);
+            }
+        } catch (e) {
+            console.log("Anche il server di backup è offline.");
+        }
+    }
 
-    // 🏆 IL FIX: Leggiamo l'immagine correttamente in ArrayBuffer
-    let arrayBuffer = await res.arrayBuffer();
-    let mediaBuffer = Buffer.from(arrayBuffer);
+    // Se arriviamo qui e non c'è la foto, è un'apocalisse server
+    if (!mediaBuffer) throw new Error('Tutti i server di generazione grafica sono attualmente bloccati o offline.');
 
     let caption = `『 🎨 𝐋 𝐄 𝐆 𝐀 𝐌 ✧ 𝐁 𝐎 𝐓 🎨 』\n\n⟡ _Richiesta:_ ${text}`;
 
@@ -40,7 +55,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   } catch (e) {
     console.error('[ERRORE IMMAGINA]', e);
-    // Ora se fallisce ti dice ESATTAMENTE qual è l'errore tecnico
     m.reply(`『 ❌ 』 \`Errore Tecnico:\` ${e.message}`);
   }
 };
