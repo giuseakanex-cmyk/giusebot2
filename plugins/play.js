@@ -1,4 +1,4 @@
-//API DI GIUSE NON PUBBLICHE
+//BY GIUSE API KEYS
 import yts from 'yt-search';
 import fg from 'api-dylux';
 import fetch from 'node-fetch';
@@ -7,61 +7,50 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`⚠️ Inserisci il titolo! Esempio: ${usedPrefix + command} Eminem Mockingbird`);
 
   try {
-    await m.reply('⏳ _Sto elaborando la traccia, attendi un momento..._');
+    await m.reply('⏳ _Sto cercando la traccia nei meandri di YouTube..._');
 
-    // 1. Ricerca su YouTube
+    // FASE 1: Ricerca
     const search = await yts(text);
     const vid = search.videos[0];
     if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
+    if (vid.seconds > 900) return m.reply('❌ *Il brano supera i 15 minuti, è troppo pesante.*');
 
-    if (vid.seconds > 900) {
-        return m.reply('❌ *Il file è troppo lungo (max 15 min).*');
-    }
-
-    // 2. Manda l'immagine estetica
+    // FASE 2: Invio Dati Estetici
     let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
     infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
     infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
     infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Estrazione audio in corso..._`;
+    infoMsg += `🎧 _Estrazione audio in corso, attendi..._`;
 
-    await conn.sendMessage(m.chat, {
-        image: { url: vid.thumbnail },
-        caption: infoMsg
-    }, { quoted: m });
+    await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
+    // FASE 3: L'Assalto delle 5 API (Mitragliatrice)
     let audioUrl = null;
 
-    // --- MOTORE DI RICERCA MULTIPLO BLINDATO ---
-    
-    // Tentativo 1: API Ryzendesu (Attualmente la più stabile)
-    try {
-        let res1 = await fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${vid.url}`);
-        let json1 = await res1.json();
-        if (json1.url) audioUrl = json1.url;
-    } catch (e) {}
+    // Array con i 5 server di estrazione più potenti attualmente in circolazione
+    const serverDiEstrazione = [
+        async () => { let r = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`); let j = await r.json(); return j.data.dl; },
+        async () => { let d = await fg.yta(vid.url); return d.dl_url; },
+        async () => { let r = await fetch(`https://aemt.me/youtube?url=${vid.url}`); let j = await r.json(); return j.result.mp3; },
+        async () => { let r = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`); let j = await r.json(); return j.result.download.url; },
+        async () => { let r = await fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${vid.url}`); let j = await r.json(); return j.url || j.data.url; }
+    ];
 
-    // Tentativo 2: API Vreden (Fallback 1)
-    if (!audioUrl) {
+    // Il bot le prova tutte, una per volta, finché una non funziona
+    for (let estrai of serverDiEstrazione) {
         try {
-            let res2 = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
-            let json2 = await res2.json();
-            if (json2.result?.download?.url) audioUrl = json2.result.download.url;
-        } catch (e) {}
+            audioUrl = await estrai();
+            if (audioUrl) break; // Se trova il link, esce subito dal ciclo!
+        } catch (e) {
+            continue; // Se il server è morto, passa zitto zitto al prossimo
+        }
     }
 
-    // Tentativo 3: Dylux (Fallback 2)
-    if (!audioUrl) {
-        try {
-            let audio = await fg.yta(vid.url);
-            if (audio && audio.dl_url) audioUrl = audio.dl_url;
-        } catch (e) {}
-    }
+    // Se arrivato fin qui audioUrl è ancora null, vuol dire che è l'apocalisse e sono morti tutti i 5 server
+    if (!audioUrl) throw new Error("Tutti i 5 server di estrazione sono attualmente offline.");
 
-    if (!audioUrl) throw new Error("Tutte le API di estrazione sono down.");
-
-    // 🏆 IL FIX DEFINITIVO: arrayBuffer() corretto per la tua versione
+    // FASE 4: Download e Invio a WhatsApp
     let resBuffer = await fetch(audioUrl);
     let mediaBuffer = Buffer.from(await resBuffer.arrayBuffer());
 
@@ -74,7 +63,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   } catch (e) {
     console.error('[ERRORE PLAY]', e);
-    m.reply('❌ _Scusa, non riesco ad estrarre l\'audio in questo momento. Riprova più tardi!_');
+    m.reply(`❌ _Errore di sistema:_ ${e.message}\n_Riprova tra qualche minuto._`);
   }
 };
 
