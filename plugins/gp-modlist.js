@@ -13,7 +13,7 @@ const handler = async (m, { conn, text }) => {
     .map(([jid]) => jid);
 
   if (mods.length === 0)
-    return m.reply('⚠️ ꉧ𝑪𝑯𝛬𝑹𝑴𝛬ᜰ𝑫𝜮𝑹ꨄf 𝚩𝚯𝐓ꉧ,non ci sono mod attivi in questo momento.');
+    return m.reply('⚠️ 𝐿𝛴𝐺𝛬𝑀 𝚩𝚯𝐓,non ci sono mod attivi in questo momento.');
 
   const customMsg = text
     ? `╔═════[ 𝕄𝔼𝕊𝕊𝔸𝔾𝔾𝕀𝕆 ]══╗
