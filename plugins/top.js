@@ -6,7 +6,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
   let dati = globalThis.archivioMessaggi[chatId];
 
   if (!dati || dati.totali === 0) {
-    return m.reply("📊 *CLASSIFICA MESSAGGI*\n\nNessun messaggio registrato oggi in questo gruppo.");
+    return m.reply("⊹ ࣪ ˖ ✦ ━━ 𝐂 𝐋 𝐀 𝐒 𝐒 𝐈 𝐅 𝐈 𝐂 𝐀 ━━ ✦ ˖ ࣪ ⊹\n\n⟡ _Il silenzio regna. Nessun messaggio registrato oggi._\n\n✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦");
   }
 
   // Determina quanti utenti mostrare
@@ -18,13 +18,12 @@ let handler = async (m, { conn, command, usedPrefix }) => {
     .sort((a, b) => b[1].conteggio - a[1].conteggio)
     .slice(0, limite);
 
-  const medaglie = ['🥇','🥈','🥉','🏅','🏅','🏅','🏅','🏅','🏅','🏅'];
+  const medaglie = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅'];
 
-  let testo = `╭━━━〔 📊 *CLASSIFICA* 📊 〕━━━⬣\n`;
-  testo += `┃ 💬 Messaggi totali: *${dati.totali}*\n`;
-  testo += `┃ 📅 Aggiornata in tempo reale\n`;
-  testo += `╰━━━━━━━━━━━━━━━━━━⬣\n\n`;
-  testo += `🏆 *TOP ${limite} DI OGGI*\n\n`;
+  let testo = `⊹ ࣪ ˖ ✦ ━━ 𝐂 𝐋 𝐀 𝐒 𝐒 𝐈 𝐅 𝐈 𝐂 𝐀 ━━ ✦ ˖ ࣪ ⊹\n\n`;
+  testo += `⋆ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐓𝐨𝐭𝐚𝐥𝐢 ➻ *${dati.totali}*\n`;
+  testo += `⋆ 𝐀𝐠𝐠𝐢𝐨𝐫𝐧𝐚𝐦𝐞𝐧𝐭𝐨 ➻ 𝐓𝐞𝐦𝐩𝐨 𝐑𝐞𝐚𝐥𝐞\n\n`;
+  testo += `🏆 *𝐓𝐎𝐏 ${limite} 𝐃𝐈 𝐎𝐆𝐆𝐈*\n\n`;
 
   let menzioni = [];
 
@@ -33,28 +32,27 @@ let handler = async (m, { conn, command, usedPrefix }) => {
     let datiUtente = u[1];
     menzioni.push(id);
     testo += `${medaglie[i]} @${id.split("@")[0]}\n`;
-    testo += `   ✉️ ${datiUtente.conteggio} messaggi\n\n`;
+    testo += `   ⟡ _${datiUtente.conteggio} messaggi_\n\n`;
   });
 
-  testo += `──────────────────\n`;
-  testo += `⏳ _Il conteggio si azzera a mezzanotte_`;
+  testo += `👑 𝐎𝐖𝐍𝐄𝐑 ➤ 𝐆𝐈𝐔𝐒𝚵\n`;
+  testo += `✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`;
 
   await conn.sendMessage(chatId, {
     text: testo,
     mentions: menzioni,
-    footer: "📊 Classifica Attiva",
+    footer: "✧ 𝑳𝑬𝑮𝑨𝑴 𝑩𝑶𝑻 ✧",
     buttons: [
       { buttonId: usedPrefix + 'top5', buttonText: { displayText: '📊 TOP 5' }, type: 1 },
       { buttonId: usedPrefix + 'top10', buttonText: { displayText: '🏆 TOP 10' }, type: 1 }
     ],
     headerType: 1,
-    // AGGIUNTO IL CANALE FAKE QUI
     contextInfo: {
       mentionedJid: menzioni,
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
         newsletterJid: '120363233544482011@newsletter',
-        newsletterName: "✨.✦★彡 Top by Giuse Ξ★✦.•",
+        newsletterName: "✨ 𝑳𝑬𝑮𝑨𝑴 𝑩𝑶𝑻 𝑹𝑨𝑵𝑲 ✧",
         serverMessageId: 100
       }
     }
@@ -98,19 +96,20 @@ setInterval(async () => {
         .sort((a, b) => b[1].conteggio - a[1].conteggio)
         .slice(0, 3);
 
-      let testo = `🌙 ╭━━━〔 🏆 *PODIO FINALE* 🏆 〕━━━⬣\n`;
-      testo += `┃ 📊 Totale messaggi: *${dati.totali}*\n`;
-      testo += `╰━━━━━━━━━━━━━━━━━━⬣\n\n`;
+      let testo = `⊹ ࣪ ˖ ✦ ━━ 𝐏𝐎𝐃𝐈𝐎 𝐅𝐈𝐍𝐀𝐋𝐄 ━━ ✦ ˖ ࣪ ⊹\n\n`;
+      testo += `⋆ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐓𝐨𝐭𝐚𝐥𝐢 ➻ *${dati.totali}*\n\n`;
 
-      const medaglie = ['🥇','🥈','🥉'];
+      const medaglie = ['🥇', '🥈', '🥉'];
       let menzioni = [];
 
       classifica.forEach((u, i) => {
         menzioni.push(u[0]);
-        testo += `${medaglie[i]} @${u[0].split("@")[0]} — ${u[1].conteggio} messaggi\n`;
+        testo += `${medaglie[i]} @${u[0].split("@")[0]} ➻ ${u[1].conteggio} msg\n`;
       });
 
-      testo += `\nConteggio Azzerato`;
+      testo += `\n⟡ _Il conteggio è stato azzerato per il nuovo giorno._\n\n`;
+      testo += `👑 𝐎𝐖𝐍𝐄𝐑 ➤ 𝐆𝐈𝐔𝐒𝚵\n`;
+      testo += `✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦ ⁺ . ⁺ ✦`;
 
       await globalThis.conn.sendMessage(gid, {
         text: testo,
@@ -119,7 +118,7 @@ setInterval(async () => {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363233544482011@newsletter',
-            newsletterName: "✨.✦★彡 Podio by Giuse Ξ★✦.•",
+            newsletterName: "✨ 𝑳𝑬𝑮𝑨𝑴 𝑩𝑶𝑻 𝑷𝑶𝑫𝑰𝑶 ✧",
             serverMessageId: 100
           }
         }
@@ -130,7 +129,7 @@ setInterval(async () => {
   }
 }, 60000);
 
-handler.help = ['top','top5','top10'];
+handler.help = ['top', 'top5', 'top10'];
 handler.tags = ['strumenti'];
 handler.command = /^(top|top5|top10)$/i;
 handler.group = true;
