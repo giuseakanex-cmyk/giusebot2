@@ -553,9 +553,12 @@ export async function handler(chatUpdate) {
                     return
                 }
 
-                                // MODIFICA SOLO QUESTA RIGA:
-                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods && !isPrems) return // isSam è il vecchio isRowner
+                // ==========================================
+                // BLOCCO MODO ADMIN E CREATORE (AGGIORNATO)
+                // ==========================================
+                if (chat.modoadmin && !isOwner && !isSam && m.isGroup && !isAdmin && !isMods) return 
                 if (settings.soloCreatore && !isSam) return
+                // ==========================================
                 
                 if (plugin.sam && !isSam) {
                     fail('sam', m, this)
