@@ -1,53 +1,91 @@
+import yts from 'yt-search';
 import fetch from 'node-fetch';
+import fg from 'api-dylux';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`『 🎵 』 \`Inserisci il titolo della canzone!\`\n\n⟡ _Esempio:_ ${usedPrefix + command} Push it by Kid Yugi`);
 
   try {
-    await m.reply('⏳ _Aggiramento dei blocchi: aggancio ai server Spotify in corso... 🟢_');
+    await m.reply('⏳ _Ricerca sicura tramite modulo interno..._');
 
-    // 1. Cerca la canzone su Spotify (usiamo un'API stabile)
-    let searchRes = await fetch(`https://api.siputzx.my.id/api/s/spotify?query=${encodeURIComponent(text)}`);
-    let searchJson = await searchRes.json();
-
-    if (!searchJson.data || searchJson.data.length === 0) {
-        return m.reply('❌ *Nessun risultato trovato su Spotify.*');
-    }
-
-    // Prendiamo il primo risultato
-    let track = searchJson.data[0]; 
-    let title = track.name || track.title || text;
-    let artist = track.artist || track.artists || "Sconosciuto";
-    let cover = track.image || track.cover || 'https://files.catbox.moe/pyp87f.jpg';
-    let spotUrl = track.url || track.link;
+    // 1. RICERCA INFALLIBILE (Usa il modulo NPM locale, non cade mai)
+    let search = await yts(text);
+    let vid = search.videos[0];
     
-    // Fallback per l'URL se l'API usa una struttura diversa
-    if (!spotUrl && track.external_urls) spotUrl = track.external_urls.spotify;
+    if (!vid) return m.reply('❌ *Nessun risultato trovato.*');
+    if (vid.seconds > 900) return m.reply('❌ *Il brano supera i 15 minuti, è troppo pesante.*');
 
-    if (!spotUrl) throw new Error("Link Spotify non trovato.");
-
-    // 2. Grafica Legam Bot (Stile Spotify)
-    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐒𝐏𝐎𝐓𝐈𝐅𝐘 𝐏𝐋𝐀𝐘 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
-    infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${title}\n`;
-    infoMsg += `┃ ➤ 🎤 𝐀𝐫𝐭𝐢𝐬𝐭𝐚: ${artist}\n`;
+    // 2. Grafica Legam Bot
+    let infoMsg = `ㅤㅤ⋆｡˚『 ╭ \`🎵 𝐏𝐋𝐀𝐘 𝐌𝐔𝐒𝐈𝐂 🎵\` ╯ 』˚｡⋆\n╭━━━━━━━━━━━━━━━━━━━━⬣\n`;
+    infoMsg += `┃ ➤ 📌 𝐓𝐢𝐭𝐨𝐥𝐨: ${vid.title}\n`;
+    infoMsg += `┃ ➤ ⏱️ 𝐃𝐮𝐫𝐚𝐭𝐚: ${vid.timestamp}\n`;
+    infoMsg += `┃ ➤ 👀 𝐕𝐢𝐞𝐰𝐬: ${vid.views}\n`;
     infoMsg += `*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒*\n`;
-    infoMsg += `🎧 _Estrazione audio in alta qualità (320kbps)..._`;
+    infoMsg += `🎧 _Infiltrazione server per estrazione audio..._`;
 
-    await conn.sendMessage(m.chat, { image: { url: cover }, caption: infoMsg }, { quoted: m });
+    await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: infoMsg }, { quoted: m });
 
-    // 3. Estrazione Audio da Spotify
-    let dlRes = await fetch(`https://api.siputzx.my.id/api/d/spotify?url=${spotUrl}`);
-    let dlJson = await dlRes.json();
+    let audioUrl = null;
 
-    let audioUrl = dlJson.data?.download || dlJson.data?.url || dlJson.url || dlJson.data;
+    // 3. ESTRAZIONE AUDIO (Cascata di emergenza)
+    console.log(`Inizio estrazione per: ${vid.url}`);
 
-    if (!audioUrl || typeof audioUrl !== 'string') {
-        throw new Error("I server di conversione Spotify sono temporaneamente offline.");
+    // Tentativo 1: Agatz API (Nuova e velocissima)
+    try {
+        let res = await fetch(`https://api.agatz.xyz/api/ytmp3?url=${vid.url}`);
+        let json = await res.json();
+        if (json.status === 200 && json.data?.download) {
+            audioUrl = json.data.download;
+            console.log("✅ Agatz API ha funzionato!");
+        }
+    } catch (e) { console.log("⚠️ Agatz fallito."); }
+
+    // Tentativo 2: Vreden API
+    if (!audioUrl) {
+        try {
+            let res = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (json.result?.download?.url) {
+                audioUrl = json.result.download.url;
+                console.log("✅ Vreden API ha funzionato!");
+            }
+        } catch (e) { console.log("⚠️ Vreden fallito."); }
     }
 
-    // 4. Download Finale e Invio (Fix memoria Buffer)
-    let audioFetch = await fetch(audioUrl);
-    if (!audioFetch.ok) throw new Error("Errore durante il download del file musicale.");
+    // Tentativo 3: Siputzx API
+    if (!audioUrl) {
+        try {
+            let res = await fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${vid.url}`);
+            let json = await res.json();
+            if (json.data?.dl) {
+                audioUrl = json.data.dl;
+                console.log("✅ Siputzx API ha funzionato!");
+            }
+        } catch (e) { console.log("⚠️ Siputzx fallito."); }
+    }
+
+    // Tentativo 4: api-dylux (Libreria interna)
+    if (!audioUrl) {
+        try {
+            let audioDylux = await fg.yta(vid.url);
+            if (audioDylux && audioDylux.dl_url) {
+                audioUrl = audioDylux.dl_url;
+                console.log("✅ Dylux interno ha funzionato!");
+            }
+        } catch (e) { console.log("⚠️ Dylux fallito."); }
+    }
+
+    if (!audioUrl) throw new Error("Tutti i server di estrazione sono bloccati dal CAPTCHA di YouTube.");
+
+    // 4. DOWNLOAD E INVIO (Con finto browser per non farsi bloccare in fase di scaricamento)
+    console.log(`Download da: ${audioUrl}`);
+    let audioFetch = await fetch(audioUrl, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        }
+    });
+    
+    if (!audioFetch.ok) throw new Error("Il file è stato trovato ma il server non ci permette di scaricarlo.");
 
     let arrayBuf = await audioFetch.arrayBuffer();
     let mediaBuffer = Buffer.from(arrayBuf);
@@ -55,19 +93,18 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     await conn.sendMessage(m.chat, {
         audio: mediaBuffer,
         mimetype: 'audio/mpeg',
-        fileName: `${title}.mp3`,
+        fileName: `${vid.title}.mp3`,
         ptt: false 
     }, { quoted: m });
 
   } catch (e) {
-    console.error('[ERRORE PLAY SPOTIFY]', e);
+    console.error('[ERRORE PLAY]', e);
     m.reply(`『 ❌ 』 \`Errore:\`\n${e.message}`);
   }
 };
 
 handler.help = ['play'];
 handler.tags = ['downloader'];
-// Accetta sia .play che .canzone
 handler.command = /^(play|canzone)$/i;
 
 export default handler;
