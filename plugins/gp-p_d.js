@@ -27,7 +27,6 @@ let handler = async (m, { conn, text, command }) => {
     return;
   }
 
-
   let number;
   if (m.mentionedJid && m.mentionedJid[0]) {
     number = m.mentionedJid[0].split('@')[0];
@@ -39,6 +38,8 @@ let handler = async (m, { conn, text, command }) => {
     let match = text.match(/@(\d+)/);
     if (match) number = match[1];
   } else {
+    // Nota: rcanal e fake presumono di essere dichiarati globalmente nella tua base. 
+    // Se prima funzionava, continuerà a funzionare!
     return conn.reply(m.chat, helpMsg, m, rcanal);
   }
 
@@ -59,7 +60,9 @@ handler.help = ['promuovi', 'retrocedi', 'p', 'r'];
 handler.tags = ['gruppo'];
 handler.command = ['promote', 'promuovi', 'p', 'demote', 'retrocedi', 'r'];
 handler.group = true;
-handler.admin = true;
-handler.botAdmin = true;
+// rimosso: handler.admin = true; (così gli admin non possono usarlo)
+handler.owner = true; // AGGIUNTO: Solo l'owner (tu) può usarlo!
+handler.botAdmin = true; // Il bot deve comunque essere admin per poter promuovere/retrocedere le persone
 
 export default handler;
+
