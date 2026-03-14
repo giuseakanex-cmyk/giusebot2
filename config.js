@@ -10,7 +10,7 @@ global.prefisso = '.'
 global.sam = ['4915511872095',]
 global.owner = [
    ['‪4915511872095‬', 'giuse1', true],
-  ['201222203579', 'giuse3', true],
+  ['4915511872095', 'giuse3', true],
   ['393780450454', 'giuse2', true],
 ]
 global.mods = ['4915511872095', '393780450454']
